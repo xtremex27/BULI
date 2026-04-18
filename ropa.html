@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BULIS | Ropa - MORCOTH x Andrew's</title>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="top-bar">Envíos a todo el Perú | Compra 100% segura</div>
+        <div class="navbar">
+            <a href="index.html" class="logo"><img src="img/logobuli.png" alt="BULIS" class="nav-logo"> BULIS</a>
+            <nav class="nav-links">
+                <a href="index.html">INICIO</a>
+                <a href="ropa.html" class="active">ROPA</a>
+                <a href="perfumes.html">PERFUMERÍA</a>
+            </nav>
+            <div class="header-actions">
+                <div class="cart-trigger" id="cart-btn">
+                    <span id="cart-total-header">S/ 0.00</span>
+                    <div class="cart-icon-wrapper">
+                        Bolsa (<span id="cart-count">0</span>)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h2>Carrito</h2>
+            <button id="close-cart" class="close-btn">&times;</button>
+        </div>
+        <div class="cart-items" id="cart-items"></div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cart-total-price">S/ 0.00</span>
+            </div>
+            <button class="checkout-btn">Finalizar Compra</button>
+        </div>
+    </div>
+    <div class="cart-overlay" id="cart-overlay"></div>
+
+    <main>
+        <!-- Page Banner -->
+        <section class="page-banner">
+            <p class="banner-subtitle">MORCOTH x ANDREW'S FASHION FOR MEN</p>
+            <h1 class="banner-title">ROPA</h1>
+            <p class="banner-desc">Prendas en tendencia como Essentials, polos y poleras a precios mayoristas.</p>
+        </section>
+
+        <!-- Filtros de subcategoría -->
+        <section class="sub-filter-bar">
+            <button class="sub-filter active" data-sub="all">TODO</button>
+            <button class="sub-filter" data-sub="polos">POLOS</button>
+            <button class="sub-filter" data-sub="poleras">POLERAS</button>
+            <button class="sub-filter" data-sub="shorts">SHORTS</button>
+        </section>
+
+        <!-- Grid de Productos -->
+        <section class="products-section">
+            <div class="product-grid" id="product-container"></div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h3>Categorías</h3>
+                <a href="ropa.html">Ropa (Morcoth)</a>
+                <a href="perfumes.html">Perfumes (Bulis Import)</a>
+            </div>
+            <div class="footer-col">
+                <h3>Ayuda</h3>
+                <a href="#">Nosotros</a>
+                <a href="#">Preguntas Frecuentes</a>
+            </div>
+            <div class="footer-col">
+                <h3>Contacto</h3>
+                <a href="https://wa.me/51933489344" target="_blank">+51 933 489 344 (WhatsApp)</a>
+                <a href="#">ventas@bulis.pe</a>
+                <a href="https://www.google.com/maps/search/Jr%2C+Agust%C3%ADn+Gamarra+1095%2C+La+Victoria+15018%2C+Per%C3%BA/@-12.0668,-77.0136,17z?hl=es" target="_blank">📍 Jr. Agustín Gamarra 1095, La Victoria</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 BULIS IMPORT. Todos los derechos reservados.
+        </div>
+    </footer>
+
+    <script src="ropa.js"></script>
+</body>
+</html>
