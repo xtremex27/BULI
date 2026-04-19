@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | BULIS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@600&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --main: #000; --accent: #3498db; }
+        body { font-family: 'Roboto', sans-serif; background: #f4f4f4; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .login-card { background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        h1 { font-family: 'Teko', sans-serif; font-size: 3rem; margin-bottom: 30px; letter-spacing: 2px; }
+        .form-group { text-align: left; margin-bottom: 20px; }
+        label { display: block; font-size: 0.8rem; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; color: #666; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
+        button { width: 100%; padding: 15px; background: #000; color: #fff; border: none; border-radius: 4px; font-weight: 700; cursor: pointer; transition: background 0.3s; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        button:hover { background: #333; }
+        .error { color: #e74c3c; font-size: 0.85rem; margin-top: 15px; display: none; }
+        .back-link { display: block; margin-top: 25px; font-size: 0.85rem; color: #888; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h1>ADMIN PORTAL</h1>
+        <div class="form-group">
+            <label>Usuario</label>
+            <input type="text" id="user" placeholder="admin">
+        </div>
+        <div class="form-group">
+            <label>Contraseña</label>
+            <input type="password" id="pass" placeholder="••••••••">
+        </div>
+        <div id="error-msg" class="error">Credenciales incorrectas. Intenta de nuevo.</div>
+        <button onclick="handleLogin()">INGRESAR</button>
+        <a href="index.html" class="back-link">← Volver a la tienda</a>
+    </div>
+
+    <script>
+        function handleLogin() {
+            const user = document.getElementById('user').value;
+            const pass = document.getElementById('pass').value;
+
+            if (user === 'admin' && pass === 'admin123') {
+                sessionStorage.setItem('bulis_admin', 'true');
+                window.location.href = 'admin.html';
+            } else {
+                document.getElementById('error-msg').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

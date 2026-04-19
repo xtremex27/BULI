@@ -37,15 +37,54 @@
 }
 
 .animate-on-scroll {
-    opacity: 0;
-    transform: translateY(40px);
-    transition: opacity 0.8s ease, transform 0.8s ease;
+    opacity: 1; /* Visible por defecto para evitar pantallas en blanco */
+    transform: translateY(0);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+/* Aplicar estado inicial oculto solo si el navegador soporta IntersectionObserver de forma segura */
+@media (prefers-reduced-motion: no-preference) {
+    .animate-on-scroll:not(.visible) {
+        opacity: 0;
+        transform: translateY(30px);
+    }
 }
 
 .animate-on-scroll.visible {
-    opacity: 1;
-    transform: translateY(0);
+    opacity: 1 !important;
+    transform: translateY(0) !important;
 }
+
+/* Estilos de Icono de Carrito */
+.bag-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+}
+
+.cart-icon-wrapper {
+    display: flex;
+    align-items: center;
+    background: transparent;
+    padding: 5px 10px;
+    border-radius: 0;
+    color: var(--text-main);
+    border: 1px solid #ddd;
+    text-decoration: none;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.bag-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 6px;
+}
+
+#cart-total-header {
+    display: none; /* Ocultar el precio para que el botón sea pequeño como el de ADMIN */
+}
+
 
 * {
     margin: 0;
@@ -69,13 +108,33 @@ a {
 .top-bar {
     background-color: var(--text-main);
     color: #fff;
-    text-align: center;
-    padding: 8px 0;
-    font-size: 0.8rem;
+    padding: 10px 0;
+    font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    animation: slideDown 0.6s ease;
+    letter-spacing: 1.5px;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
 }
+
+.marquee {
+    display: inline-block;
+    white-space: nowrap;
+    animation: marquee-scroll 40s linear infinite;
+}
+
+@keyframes marquee-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.marquee span {
+    padding-right: 60px;
+    display: inline-block;
+}
+
+
 
 .navbar {
     display: flex;
@@ -261,45 +320,93 @@ a {
 
 .category-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
 }
 
 .category-card {
-    height: 200px;
+    height: 300px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: transform 0.3s;
-    background-size: cover;
-    background-position: center;
+    overflow: hidden;
     position: relative;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(0,0,0,0.05);
 }
 
-.category-card::before {
+.category-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    transition: transform 0.8s cubic-bezier(0.2, 1, 0.3, 1);
+    z-index: 0;
+}
+
+.category-card:hover .category-bg {
+    transform: scale(1.1);
+}
+
+.category-card::after {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.2);
+    transition: background 0.4s ease;
+    z-index: 1;
 }
 
 .category-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+.category-card:hover::after {
+    background: rgba(0, 0, 0, 0.4);
 }
 
 .category-card h4 {
     position: relative;
-    background: #000;
-    color: #fff;
-    padding: 10px 20px;
-    font-size: 1.2rem;
-    font-family: 'Teko', sans-serif;
-    letter-spacing: 1px;
     z-index: 2;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #fff;
+    padding: 12px 30px;
+    font-size: 1.6rem;
+    font-family: 'Teko', sans-serif;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.4s ease;
+}
+
+.category-card:hover h4 {
+    background: #000;
+    border-color: #fff;
+    transform: scale(1.05);
+}
+
+.promo-card {
+    background: linear-gradient(135deg, #d11212 0%, #750a0a 100%) !important;
+}
+
+.promo-card h4 {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.promo-card:hover h4 {
+    background: #fff;
+    color: #d11212;
 }
 
 /* Products */
@@ -491,6 +598,104 @@ a {
 
 .location-info p {
     color: var(--text-muted);
+}
+
+/* Categorías Home (Dinamico) */
+.home-categories {
+    padding: 60px 5%;
+    text-align: left;
+}
+
+.home-categories h2 {
+    font-family: 'Teko', sans-serif;
+    font-size: 3.5rem;
+    margin-bottom: 40px;
+    letter-spacing: 2px;
+    line-height: 1;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.category-card {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: transparent; /* Sin fondo molesto */
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+    text-decoration: none;
+    color: #000; /* Texto oscuro por defecto */
+    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease;
+}
+
+.category-bg {
+    position: absolute;
+    top: 5%;
+    left: 5%;
+    width: 90%;
+    height: 90%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+/* Caso especial Ofertas (Rojo) */
+.category-card[href="#ropa"] {
+    background: #8b0000; 
+}
+
+.category-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08); /* Sombra elegante */
+}
+
+.category-card:hover .category-bg {
+    transform: scale(1.08);
+}
+
+.category-card h4 {
+    position: relative;
+    z-index: 1;
+    font-family: 'Teko', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: transparent; /* Solo la imagen nomás */
+    color: #000;
+    padding: 10px;
+    text-align: center;
+    text-shadow: 0 2px 10px rgba(255,255,255,0.8);
+    transition: color 0.3s;
+}
+
+.category-card:hover h4 {
+    color: var(--text-main);
+}
+
+/* Responsive Grid */
+@media (max-width: 1024px) {
+    .category-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .category-grid {
+        grid-template-columns: 1fr;
+    }
+    .category-card h4 {
+        font-size: 1.4rem;
+        min-width: 140px;
+    }
+}
+
+.location-info p {
     font-size: 1rem;
     margin-bottom: 5px;
 }
@@ -660,6 +865,76 @@ a {
     pointer-events: auto;
 }
 
+/* ============ MOBILE NAV SIDEBAR ============ */
+.nav-sidebar {
+    position: fixed;
+    top: 0;
+    left: -320px; /* Oculto a la izquierda */
+    width: 300px;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    z-index: 500;
+    transition: left 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-sidebar.open {
+    left: 0;
+}
+
+.sidebar-header {
+    padding: 30px 25px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sidebar-header .store-name-text {
+    font-family: 'Teko', sans-serif;
+    font-size: 2rem;
+    color: var(--text-main);
+}
+
+.sidebar-nav-links {
+    padding: 30px 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.sidebar-nav-links a {
+    text-decoration: none;
+    color: #000;
+    font-family: 'Teko', sans-serif;
+    font-size: 1.8rem;
+    text-transform: uppercase;
+    transition: color 0.3s;
+    letter-spacing: 1px;
+}
+
+.sidebar-nav-links a:hover {
+    color: var(--text-main);
+}
+
+/* ============ HAMBURGER MENU ============ */
+.menu-toggle {
+    display: none; /* Oculto en desktop */
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    color: #000;
+    margin-right: 15px;
+}
+
+.menu-toggle svg {
+    width: 100%;
+    height: 100%;
+}
+
 /* ============ TABLET GRANDE (1024px) ============ */
 @media (max-width: 1024px) {
     .product-grid {
@@ -686,11 +961,20 @@ a {
     }
 
     .nav-links {
-        display: none;
+        display: none; /* Usamos el sidebar en móvil */
     }
 
-    .logo {
-        font-size: 1.8rem;
+    .menu-toggle {
+        display: block; /* Mostrar hamburguesa */
+    }
+
+    .navbar {
+        padding: 15px 5%;
+        justify-content: flex-start; /* Logo y menú a la izquierda */
+    }
+
+    .header-actions {
+        margin-left: auto; /* Acciones a la derecha */
     }
 
     .nav-logo {
@@ -950,5 +1234,186 @@ a {
     .checkout-btn {
         padding: 12px;
         font-size: 0.85rem;
+    }
+}
+
+/* Product Modal Premium */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(10px);
+    display: none;
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal-overlay.show {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+}
+
+.product-modal {
+    background: #fff;
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.4s ease;
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 2rem;
+    cursor: pointer;
+    z-index: 10;
+    color: #333;
+    transition: transform 0.3s;
+}
+
+.modal-close:hover {
+    transform: rotate(90deg);
+}
+
+.modal-image-side {
+    background: #f9f9f9;
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-image-side img {
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.modal-info-side {
+    padding: 40px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-category {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #888;
+    margin-bottom: 5px;
+}
+
+.modal-title {
+    font-family: 'Teko', sans-serif;
+    font-size: 2.5rem;
+    line-height: 1.1;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+}
+
+.modal-prices {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: baseline;
+    gap: 15px;
+}
+
+.modal-price {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.modal-prev-price {
+    text-decoration: line-through;
+    color: #999;
+    font-size: 1.2rem;
+}
+
+.modal-desc {
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 25px;
+    font-size: 0.95rem;
+}
+
+.modal-option-title {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.modal-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.option-btn {
+    border: 1px solid #ddd;
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    background: #fff;
+    transition: all 0.3s;
+}
+
+.option-btn:hover {
+    border-color: #000;
+}
+
+.option-btn.selected {
+    background: #000;
+    color: #fff;
+    border-color: #000;
+}
+
+.modal-footer {
+    margin-top: auto;
+    padding-top: 20px;
+}
+
+.modal-btn-add {
+    width: 100%;
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 18px;
+    font-family: 'Teko', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.modal-btn-add:hover {
+    background: #333;
+}
+
+@media (max-width: 768px) {
+    .product-modal {
+        grid-template-columns: 1fr;
+        max-height: 100vh;
+    }
+    .modal-image-side {
+        padding: 20px;
+        height: 250px;
+    }
+    .modal-info-side {
+        padding: 25px;
+    }
+    .modal-title {
+        font-size: 2rem;
     }
 }

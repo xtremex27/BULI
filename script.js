@@ -1,158 +1,101 @@
-const ropaProducts = [
-    { id: 1, name: "Polo Essentials Fear Of God - Abbey Stone", prevPrice: 120.00, price: 89.00, discount: " -25%", category: "ropa", image: "img/125SP254190F_CLASSIC_FIT_T-SHIRT-ABBEY_STONE_2_1920x_88e71190-8ba2-45b3-a0c2-1fd29cb7ba6c.webp" },
-    { id: 2, name: "Premium Streetwear LS - Black", prevPrice: null, price: 110.00, discount: null, category: "ropa", image: "img/polo-negro.png" },
-    { id: 3, name: "Hoodie Luxe Oversize - Beige", prevPrice: 190.00, price: 159.00, discount: " -16%", category: "ropa", image: "img/hoodie-beige.png" },
-    { id: 4, name: "Polera Oversize Custom", prevPrice: 200.00, price: 140.00, discount: "-30%", category: "ropa", image: "img/polera-negra.png" }
-];
-
-const perfumesProducts = [
-    { id: 5, name: "Perfume Lattafa Asad 100ml", prevPrice: 150.00, price: 120.00, discount: " -20%", category: "perfumes", image: "img/perfume-1.png" },
-    { id: 6, name: "Perfume Club De Nuit Intense Man", prevPrice: null, price: 210.00, discount: null, category: "perfumes", image: "img/perfume-2.png" },
-    { id: 7, name: "Perfume Bharara King 100ml", prevPrice: null, price: 185.00, discount: null, category: "perfumes", image: "img/perfume-3.png" },
-    { id: 8, name: "Afnan 9 PM 100ml Original", prevPrice: 200.00, price: 160.00, discount: " -20%", category: "perfumes", image: "img/perfume-4.png" }
-];
-
-// Unimos ambos arreglos para el funcionamiento global del carrito
-const allProducts = [...ropaProducts, ...perfumesProducts];
-
-const ropaContainer = document.getElementById('ropa-container');
-const perfumesContainer = document.getElementById('perfumes-container');
-const cartBtn = document.getElementById('cart-btn');
-const cartSidebar = document.getElementById('cart-sidebar');
-const closeCartBtn = document.getElementById('close-cart');
-const cartOverlay = document.getElementById('cart-overlay');
-const cartItemsContainer = document.getElementById('cart-items');
-const cartCountEl = document.getElementById('cart-count');
-const cartTotalPriceEl = document.getElementById('cart-total-price');
-const cartTotalHeaderEl = document.getElementById('cart-total-header');
-
-let cart = [];
-
-function generateProductHtml(product) {
-    const hasDiscount = product.discount !== null;
-    let priceHtml = hasDiscount 
-        ? `<span class="original-price">S/${product.prevPrice.toFixed(2)}</span><span class="product-price">S/${product.price.toFixed(2)}</span>`
-        : `<span class="product-price">S/${product.price.toFixed(2)}</span>`;
-    let badgeHtml = hasDiscount ? `<div class="sale-badge">${product.discount}</div>` : '';
-
-    return `
-        <div class="product-card">
-            <div class="product-image">
-                ${badgeHtml}
-                <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/400x400/eeeeee/000000?text=BULIS'">
-            </div>
-            <div class="product-title">${product.name}</div>
-            <div class="price-container">
-                ${priceHtml}
-            </div>
-            <button class="btn-add" onclick="addToCart(${product.id})">COMPRAR AHORA</button>
-        </div>
-    `;
+// script.js - Home Page Logic: Autocurativo
+async function startHome() {
+    try {
+        await initDB();
+        if (window.ui && window.ui.applyGlobalConfig) {
+            window.ui.applyGlobalConfig();
+        }
+    } catch(e) { 
+        console.warn("initDB falló, continuando con fallback...");
+    }
+    
+    if (window.ui && window.ui.init) {
+        ui.init();
+    }
+    
+    renderWithRetry(0);
 }
 
-// Inyectar HTML en los contenedores correspondientes como secciones separadas
-function renderSections() {
-    ropaContainer.innerHTML = '';
-    perfumesContainer.innerHTML = '';
 
-    ropaProducts.forEach((p, i) => {
-        const div = document.createElement('div');
-        div.innerHTML = generateProductHtml(p);
-        const card = div.firstElementChild;
-        card.classList.add('animate-on-scroll');
-        card.style.transitionDelay = `${(i % 4) * 0.1}s`;
-        ropaContainer.appendChild(card);
-    });
-
-    perfumesProducts.forEach((p, i) => {
-        const div = document.createElement('div');
-        div.innerHTML = generateProductHtml(p);
-        const card = div.firstElementChild;
-        card.classList.add('animate-on-scroll');
-        card.style.transitionDelay = `${(i % 4) * 0.1}s`;
-        perfumesContainer.appendChild(card);
-    });
+function renderWithRetry(attempts) {
+    const ropaCont = document.getElementById('ropa-container');
+    const perfCont = document.getElementById('perfumes-container');
     
-    // Inicializar animaciones después de renderizar
-    if (typeof initAnimations === 'function') initAnimations();
-}
-
-window.addToCart = function(productId) {
-    const product = allProducts.find(p => p.id === productId);
-    cart.push(product);
-    updateCartUI();
-    openCart();
-};
-
-window.removeFromCart = function(index) {
-    cart.splice(index, 1);
-    updateCartUI();
-};
-
-function updateCartUI() {
-    cartCountEl.innerText = cart.length;
-    cartItemsContainer.innerHTML = '';
-    
-    let total = 0;
-    
-    if (cart.length === 0) {
-        cartItemsContainer.innerHTML = '<p style="color:#666;">Tu carrito está vacío.</p>';
-    } else {
-        cart.forEach((item, index) => {
-            total += item.price;
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'cart-item';
-            itemDiv.innerHTML = `
-                <img src="${item.image}" onerror="this.src='https://via.placeholder.com/80/eeeeee/000000'">
-                <div>
-                    <div style="font-weight:500; font-size:0.9rem;">${item.name}</div>
-                    <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:5px;">S/ ${item.price.toFixed(2)}</div>
-                    <button style="background:none; border:none; text-decoration:underline; font-size:0.8rem; cursor:pointer;" onclick="removeFromCart(${index})">Eliminar</button>
-                </div>
-            `;
-            cartItemsContainer.appendChild(itemDiv);
-        });
+    if (!ropaCont || !perfCont) {
+        if (attempts < 10) setTimeout(() => renderWithRetry(attempts + 1), 200);
+        return;
     }
 
-    cartTotalPriceEl.innerText = `S/ ${total.toFixed(2)}`;
-    cartTotalHeaderEl.innerText = `S/ ${total.toFixed(2)}`;
+    const allProducts = window.dbActions.getProducts();
+    
+    if (allProducts && allProducts.length > 0) {
+        ui.updateProducts(allProducts);
+        renderHomeSections(allProducts, ropaCont, perfCont);
+    } else if (attempts < 20) {
+        setTimeout(() => renderWithRetry(attempts + 1), 500);
+    }
 }
 
-function openCart() {
-    cartSidebar.classList.add('open');
-    cartOverlay.classList.add('show');
-    document.body.style.overflow = 'hidden';
+function generateProductHtml(product) {
+    try {
+        const price = product.price || 0;
+        const prevPrice = product.prevPrice || 0;
+        const hasDiscount = product.discount && product.discount !== "null" && product.discount !== "";
+        
+        let priceHtml = hasDiscount 
+            ? `<span class="original-price">S/${Number(prevPrice).toFixed(2)}</span><span class="product-price">S/${Number(price).toFixed(2)}</span>`
+            : `<span class="product-price">S/${Number(price).toFixed(2)}</span>`;
+        
+        let badgeHtml = hasDiscount ? `<div class="sale-badge">${product.discount}</div>` : '';
+
+        return `
+            <div class="product-card animate-on-scroll">
+                <div class="product-image">
+                    ${badgeHtml}
+                    <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/400x400/eeeeee/000000?text=BULIS'">
+                </div>
+                <div class="product-title">${product.name}</div>
+                <div class="price-container">
+                    ${priceHtml}
+                </div>
+                <button class="btn-add" onclick="openProductModal(${product.id})">VER DETALLES</button>
+            </div>
+        `;
+    } catch(e) {
+        return "";
+    }
 }
 
-function closeCart() {
-    cartSidebar.classList.remove('open');
-    cartOverlay.classList.remove('show');
-    document.body.style.overflow = '';
-}
+function renderHomeSections(allProducts, ropaCont, perfCont) {
+    ropaCont.innerHTML = '';
+    perfCont.innerHTML = '';
 
-cartBtn.addEventListener('click', openCart);
-closeCartBtn.addEventListener('click', closeCart);
-cartOverlay.addEventListener('click', closeCart);
+    const ropa = allProducts.filter(p => p.category === 'ropa').slice(0, 12);
+    const perfumes = allProducts.filter(p => p.category === 'perfumes').slice(0, 12);
 
-// Inicializar página
-renderSections();
-
-// Intersection Observer para animaciones al scroll
-const observerOptions = {
-    threshold: 0.1
-};
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
+    ropa.forEach((p, i) => {
+        const html = generateProductHtml(p);
+        if (html) {
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            const card = div.firstElementChild;
+            card.style.transitionDelay = `${(i % 4) * 0.1}s`;
+            ropaCont.appendChild(card);
         }
     });
-}, observerOptions);
 
-function initAnimations() {
-    const animElements = document.querySelectorAll('.animate-on-scroll');
-    animElements.forEach(el => observer.observe(el));
+    perfumes.forEach((p, i) => {
+        const html = generateProductHtml(p);
+        if (html) {
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            const card = div.firstElementChild;
+            card.style.transitionDelay = `${(i % 4) * 0.1}s`;
+            perfCont.appendChild(card);
+        }
+    });
+
+    if (window.ui && window.ui.initAnimations) window.ui.initAnimations();
 }
 
-initAnimations();
+startHome();
