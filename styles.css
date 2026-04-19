@@ -1,4 +1,4 @@
-/* Estilo idéntico a Yolu.pe: Blanco, limpio, Letras Teko/Roboto, Botones sólidos negros */
+/* BULIS Store - Estilos Principales */
 :root {
     --bg-color: #ffffff;
     --bg-alt: #f8f9fa;
@@ -6,6 +6,45 @@
     --text-muted: #666666;
     --border: #eeeeee;
     --red-sale: #d11212;
+}
+
+/* Animaciones */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-on-scroll {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.animate-on-scroll.visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 * {
@@ -35,6 +74,7 @@ a {
     font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 1px;
+    animation: slideDown 0.6s ease;
 }
 
 .navbar {
@@ -117,11 +157,16 @@ a {
     padding: 20px;
 }
 
+.banner-content {
+    animation: fadeInUp 1s ease;
+}
+
 .banner-logo {
     display: block;
     margin: 10px auto;
     width: 250px;
     height: auto;
+    animation: fadeIn 1.5s ease;
 }
 
 /* Page Banner (Páginas internas: ropa.html, perfumes.html) */
@@ -309,7 +354,7 @@ a {
 
 .product-card:hover .product-image img {
     transform: scale(1.05);
-    /* Zoom sutil como en Yolu.pe */
+    /* Zoom sutil al pasar el mouse */
 }
 
 .sale-badge {

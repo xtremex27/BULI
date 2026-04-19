@@ -23,7 +23,7 @@ const cartTotalHeaderEl = document.getElementById('cart-total-header');
 
 let cart = [];
 
-function renderProducts(sub = 'all') {
+async function renderProducts(sub = 'all') {
     container.innerHTML = '';
     const filtered = sub === 'all' ? ropaProducts : ropaProducts.filter(p => p.sub === sub);
 
@@ -35,7 +35,9 @@ function renderProducts(sub = 'all') {
         let badgeHtml = hasDiscount ? `<div class="sale-badge">${product.discount}</div>` : '';
 
         const card = document.createElement('div');
-        card.className = 'product-card';
+        card.className = 'product-card animate-on-scroll';
+        // Añadir un pequeño retraso para un efecto escalonado
+        card.style.transitionDelay = `${(filtered.indexOf(product) % 4) * 0.1}s`;
         card.innerHTML = `
             <div class="product-image">
                 ${badgeHtml}
@@ -47,6 +49,9 @@ function renderProducts(sub = 'all') {
         `;
         container.appendChild(card);
     });
+    
+    // Re-inicializar animaciones después de renderizar
+    initAnimations();
 }
 
 subFilters.forEach(btn => {
@@ -110,4 +115,23 @@ cartBtn.addEventListener('click', openCart);
 closeCartBtn.addEventListener('click', closeCart);
 cartOverlay.addEventListener('click', closeCart);
 
+// Intersection Observer para animaciones al scroll
+const observerOptions = {
+    threshold: 0.1
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
+    });
+}, observerOptions);
+
+function initAnimations() {
+    const animElements = document.querySelectorAll('.animate-on-scroll');
+    animElements.forEach(el => observer.observe(el));
+}
+
 renderProducts();
+initAnimations();

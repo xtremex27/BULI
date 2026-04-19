@@ -52,8 +52,29 @@ function generateProductHtml(product) {
 
 // Inyectar HTML en los contenedores correspondientes como secciones separadas
 function renderSections() {
-    ropaContainer.innerHTML = ropaProducts.map(p => generateProductHtml(p)).join('');
-    perfumesContainer.innerHTML = perfumesProducts.map(p => generateProductHtml(p)).join('');
+    ropaContainer.innerHTML = '';
+    perfumesContainer.innerHTML = '';
+
+    ropaProducts.forEach((p, i) => {
+        const div = document.createElement('div');
+        div.innerHTML = generateProductHtml(p);
+        const card = div.firstElementChild;
+        card.classList.add('animate-on-scroll');
+        card.style.transitionDelay = `${(i % 4) * 0.1}s`;
+        ropaContainer.appendChild(card);
+    });
+
+    perfumesProducts.forEach((p, i) => {
+        const div = document.createElement('div');
+        div.innerHTML = generateProductHtml(p);
+        const card = div.firstElementChild;
+        card.classList.add('animate-on-scroll');
+        card.style.transitionDelay = `${(i % 4) * 0.1}s`;
+        perfumesContainer.appendChild(card);
+    });
+    
+    // Inicializar animaciones después de renderizar
+    if (typeof initAnimations === 'function') initAnimations();
 }
 
 window.addToCart = function(productId) {
@@ -115,3 +136,23 @@ cartOverlay.addEventListener('click', closeCart);
 
 // Inicializar página
 renderSections();
+
+// Intersection Observer para animaciones al scroll
+const observerOptions = {
+    threshold: 0.1
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
+    });
+}, observerOptions);
+
+function initAnimations() {
+    const animElements = document.querySelectorAll('.animate-on-scroll');
+    animElements.forEach(el => observer.observe(el));
+}
+
+initAnimations();
