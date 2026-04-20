@@ -39,7 +39,7 @@
     <script src="db.js"></script>
     <script>
         async function handleLogin() {
-            const email = document.getElementById('user').value;
+            const user = document.getElementById('user').value;
             const pass = document.getElementById('pass').value;
             const errorMsg = document.getElementById('error-msg');
             const loginBtn = document.querySelector('button');
@@ -49,21 +49,26 @@
             loginBtn.disabled = true;
 
             try {
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
-                    email: email,
-                    password: pass,
-                });
+                // Consultar la tabla sencilla de admins
+                const { data, error } = await supabaseClient
+                    .from('admins')
+                    .select('*')
+                    .eq('username', user)
+                    .eq('password', pass);
 
-                if (error) {
-                    errorMsg.innerText = "Error: " + error.message;
+                if (error || !data || data.length === 0) {
+                    errorMsg.innerText = "Usuario o contraseña incorrectos.";
                     errorMsg.style.display = 'block';
                     loginBtn.innerText = 'INGRESAR';
                     loginBtn.disabled = false;
                 } else {
+                    // Guardar sesión local sencilla
+                    sessionStorage.setItem('bulis_admin', 'true');
                     window.location.href = 'admin.html';
                 }
             } catch (err) {
-                errorMsg.innerText = "Error de conexión.";
+                console.error(err);
+                errorMsg.innerText = "Error de conexión con la base de datos.";
                 errorMsg.style.display = 'block';
                 loginBtn.innerText = 'INGRESAR';
                 loginBtn.disabled = false;

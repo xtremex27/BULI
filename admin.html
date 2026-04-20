@@ -265,14 +265,10 @@
                 </div>
             </form>
            <script>
-        // Check Auth Profesional
-        async function checkSession() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) {
-                window.location.href = 'admin-login.html';
-            }
+        // Check Auth Sencillo
+        if (!sessionStorage.getItem('bulis_admin')) {
+            window.location.href = 'admin-login.html';
         }
-        checkSession();
 
         // Previsualización de Imágenes
         function setupPreview(fileInputId, imgId, placeholderId) {
@@ -541,8 +537,8 @@
             await loadProducts();
         };
 
-        async function logout() {
-            await supabaseClient.auth.signOut();
+        function logout() {
+            sessionStorage.removeItem('bulis_admin');
             window.location.href = 'index.html';
         }
 
