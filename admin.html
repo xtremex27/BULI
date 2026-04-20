@@ -215,14 +215,15 @@
                     </div>
                     <div class="form-group">
                         <label>Categoría</label>
-                        <select id="p-category">
-                            <option value="ropa">Ropa</option>
-                            <option value="perfumes">Perfumes</option>
+                        <select id="p-category" onchange="updateSubCategorySelect()" required>
+                            <option value="">Seleccione...</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Sub-Categoría</label>
-                        <input type="text" id="p-sub" placeholder="polos, hombre, etc.">
+                        <select id="p-sub" required>
+                            <option value="">Primero elija categoría...</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Precio Actual (S/)</label>
@@ -270,26 +271,47 @@
         <div class="form-card">
             <h2 style="font-family:'Teko', sans-serif; font-size:2rem; margin-top:0;">NUEVA CATEGORÍA</h2>
             <form id="cat-form">
-                <div class="form-group">
-                    <label>Nombre de la Categoría</label>
-                    <input type="text" id="cat-name" placeholder="Ej: Ropa Urban" required>
-                </div>
-                <div class="form-group">
-                    <label>Enlace de Destino</label>
-                    <input type="text" id="cat-link" placeholder="ropa.html o #id" required>
-                </div>
-                <div class="form-group full">
-                    <label style="text-align: center;">Imagen de la Categoría</label>
-                    <div class="image-upload-wrapper">
-                        <div class="preview-container" onclick="document.getElementById('cat-file').click()">
-                            <div class="preview-placeholder" id="cat-placeholder">📷</div>
-                            <img id="cat-preview" style="display: none;">
+                <input type="hidden" id="cat-id-val">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nombre de la Categoría</label>
+                        <input type="text" id="cat-name" placeholder="Ej: Ropa Urban" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Subtítulo</label>
+                        <input type="text" id="cat-subtitle" placeholder="Ej: Recién llegado">
+                    </div>
+                    <div class="form-group full">
+                        <label>Descripción del Banner</label>
+                        <textarea id="cat-desc" rows="2" placeholder="Ej: Prendas en tendencia a precios mayoristas..."></textarea>
+                    </div>
+                    <div class="form-group full">
+                        <label>Enlace de Destino</label>
+                        <input type="text" id="cat-link" placeholder="ropa.html o #id" required>
+                    </div>
+                    <div class="form-group full">
+                        <label style="text-align: center;">Imagen de la Categoría</label>
+                        <div class="image-upload-wrapper">
+                            <div class="preview-container" onclick="document.getElementById('cat-file').click()">
+                                <div class="preview-placeholder" id="cat-placeholder">📷</div>
+                                <img id="cat-preview" style="display: none;">
+                            </div>
+                            <label for="cat-file" class="upload-label">Toca para cambiar imagen</label>
+                            <input type="file" id="cat-file" accept="image/*">
+                            <input type="hidden" id="cat-img">
                         </div>
-                        <label for="cat-file" class="upload-label">Toca para cambiar imagen</label>
-                        <input type="file" id="cat-file" accept="image/*">
-                        <input type="hidden" id="cat-img">
                     </div>
                 </div>
+                <!-- Sección de Sub-categorías -->
+                <div id="sub-cat-section" style="display:none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
+                    <label>Sub-categorías (Texto)</label>
+                    <div style="display:flex; gap:10px; margin-bottom: 10px;">
+                        <input type="text" id="new-sub-name" placeholder="Nueva sub-categoría...">
+                        <button type="button" class="btn btn-main" onclick="addSubCategory()" style="width:auto; padding: 10px 20px;">+</button>
+                    </div>
+                    <div id="sub-cat-list" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
+                </div>
+
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:30px;">
                     <button type="button" class="btn" style="background:#eee;" onclick="closeCatModal()">Cancelar</button>
                     <button type="submit" class="btn btn-main">Guardar Categoría</button>
@@ -371,7 +393,13 @@
             const cats = await window.dbActions.getCategories();
             const tbody = document.getElementById('categories-tbody');
             tbody.innerHTML = '';
+            
+            // También actualizar select de productos
+            const pCatSelect = document.getElementById('p-category');
+            pCatSelect.innerHTML = '<option value="">Seleccione...</option>';
+
             cats.forEach(c => {
+                // Fila de tabla
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>#${c.id}</td>
@@ -379,10 +407,42 @@
                     <td><b>${c.name}</b></td>
                     <td><code>${c.link}</code></td>
                     <td>
-                        <button class="btn-action btn-delete" onclick="deleteCategory(${c.id})">❌</button>
+                        <div class="actions" style="gap:5px;">
+                            <button class="btn-action" onclick="openCatModal(${JSON.stringify(c).replace(/"/g, '&quot;')})">✏️</button>
+                            <button class="btn-action btn-delete" onclick="deleteCategory(${c.id})">❌</button>
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
+
+                // Option en select de productos
+                const opt = document.createElement('option');
+                opt.value = c.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // slug
+                opt.dataset.id = c.id;
+                opt.textContent = c.name;
+                pCatSelect.appendChild(opt);
+            });
+        }
+
+        async function updateSubCategorySelect() {
+            const pCatSelect = document.getElementById('p-category');
+            const pSubSelect = document.getElementById('p-sub');
+            const selectedOpt = pCatSelect.options[pCatSelect.selectedIndex];
+            
+            pSubSelect.innerHTML = '<option value="">Cargando...</option>';
+            
+            if (!selectedOpt || !selectedOpt.dataset.id) {
+                pSubSelect.innerHTML = '<option value="">Primero elija categoría...</option>';
+                return;
+            }
+
+            const subs = await window.dbActions.getSubCategories(selectedOpt.dataset.id);
+            pSubSelect.innerHTML = '<option value="">Seleccione...</option>';
+            subs.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.name.toLowerCase();
+                opt.textContent = s.name;
+                pSubSelect.appendChild(opt);
             });
         }
 
@@ -394,18 +454,69 @@
         }
 
         const catModal = document.getElementById('cat-modal-overlay');
-        function openCatModal() {
-            document.getElementById('cat-form').reset();
+        function closeCatModal() {
+            catModal.classList.remove('show');
+        }
+
+        async function openCatModal(cat = null) {
+            const form = document.getElementById('cat-form');
+            form.reset();
             
-            // Reset preview
-            document.getElementById('cat-preview').style.display = 'none';
-            document.getElementById('cat-placeholder').style.display = 'flex';
+            if (cat) {
+                document.getElementById('cat-id-val').value = cat.id;
+                document.getElementById('cat-name').value = cat.name;
+                document.getElementById('cat-subtitle').value = cat.subtitle || '';
+                document.getElementById('cat-desc').value = cat.description || '';
+                document.getElementById('cat-link').value = cat.link;
+                document.getElementById('cat-img').value = cat.image || '';
+                
+                if (cat.image) {
+                    document.getElementById('cat-preview').src = cat.image;
+                    document.getElementById('cat-preview').style.display = 'block';
+                    document.getElementById('cat-placeholder').style.display = 'none';
+                }
+
+                // Mostrar sub-categorías si ya existe la categoría
+                document.getElementById('sub-cat-section').style.display = 'block';
+                await loadSubCategoriesList(cat.id);
+            } else {
+                document.getElementById('cat-id-val').value = '';
+                document.getElementById('sub-cat-section').style.display = 'none';
+                document.getElementById('cat-preview').style.display = 'none';
+                document.getElementById('cat-placeholder').style.display = 'flex';
+            }
             
             catModal.classList.add('show');
         }
 
-        function closeCatModal() {
-            catModal.classList.remove('show');
+        async function loadSubCategoriesList(catId) {
+            const list = document.getElementById('sub-cat-list');
+            list.innerHTML = 'Cargando...';
+            const subs = await window.dbActions.getSubCategories(catId);
+            list.innerHTML = '';
+            subs.forEach(s => {
+                const chip = document.createElement('div');
+                chip.style = "background:#f1f1f1; padding:5px 12px; border-radius:20px; font-size:0.8rem; display:flex; align-items:center; gap:8px;";
+                chip.innerHTML = `${s.name} <span onclick="deleteSubCategory(${s.id}, ${catId})" style="cursor:pointer; color:red;">×</span>`;
+                list.appendChild(chip);
+            });
+        }
+
+        async function addSubCategory() {
+            const name = document.getElementById('new-sub-name').value;
+            const catId = document.getElementById('cat-id-val').value;
+            if (!name || !catId) return;
+            
+            await window.dbActions.saveSubCategory({ category_id: catId, name });
+            document.getElementById('new-sub-name').value = '';
+            await loadSubCategoriesList(catId);
+        }
+
+        async function deleteSubCategory(id, catId) {
+            if (confirm('¿Eliminar sub-categoría?')) {
+                await window.dbActions.deleteSubCategory(id);
+                await loadSubCategoriesList(catId);
+            }
         }
 
         // Subida a Cloudinary
@@ -448,10 +559,19 @@
                 if (uploaded) imgUrl = uploaded;
             }
 
-            const name = document.getElementById('cat-name').value;
-            const link = document.getElementById('cat-link').value;
+            const catId = document.getElementById('cat-id-val').value;
+            const catData = {
+                name: document.getElementById('cat-name').value,
+                subtitle: document.getElementById('cat-subtitle').value,
+                description: document.getElementById('cat-desc').value,
+                link: document.getElementById('cat-link').value,
+                image: imgUrl
+            };
             
-            await window.dbActions.addCategory(name, link, imgUrl);
+            // Solo enviar ID si realmente estamos editando (no vacío)
+            if (catId && catId !== "") catData.id = parseInt(catId);
+
+            await window.dbActions.saveCategory(catData);
             closeCatModal();
             await loadCategories();
         };

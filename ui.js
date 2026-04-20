@@ -281,7 +281,7 @@ async function applyGlobalConfig() {
     document.querySelectorAll('.store-name-text').forEach(el => el.innerText = name);
     if (document.getElementById('main-logo')) document.getElementById('main-logo').src = logo;
 
-    // Banner Hero
+    // Home Banner Hero
     if (document.getElementById('hero-title')) document.getElementById('hero-title').innerText = bannerTitle;
     if (document.getElementById('hero-subtitle')) document.getElementById('hero-subtitle').innerText = bannerSub;
 
@@ -293,48 +293,63 @@ async function applyGlobalConfig() {
         marqueeCont.innerHTML = fullContent;
     }
 
-    // Dynamic Navigation (Desktop & Mobile)
+    // Dynamic Navigation
     const navCont = document.getElementById('dynamic-nav');
     const mobileNavCont = document.getElementById('mobile-dynamic-nav');
     
+    let cats = await window.dbActions.getCategories();
+
     if (navCont || mobileNavCont) {
-        let cats = await window.dbActions.getCategories();
-        if (cats.length === 0) cats = window.dbDefaults.categories;
-        
         let navHtml = `<a href="index.html">INICIO</a>`;
-        cats.slice(0, 5).forEach(c => {
+        cats.forEach(c => {
             navHtml += `<a href="${c.link}">${c.name}</a>`;
         });
-        
         if (navCont) navCont.innerHTML = navHtml;
         if (mobileNavCont) mobileNavCont.innerHTML = navHtml;
     }
 
-    // Category Grid (Home)
+    // Home Category Grid
     const gridCont = document.getElementById('category-grid');
     if (gridCont) {
-        let cats = await window.dbActions.getCategories();
-        if (cats.length === 0) cats = window.dbDefaults.categories;
-        
         gridCont.innerHTML = '';
         cats.forEach(c => {
             const card = document.createElement('a');
             card.href = c.link;
             card.className = 'category-card';
-            
             const bgHtml = c.image ? `<div class="category-bg" style="background-image: url('${c.image}');"></div>` : '';
-            
-            card.innerHTML = `
-                ${bgHtml}
-                <h4>${c.name}</h4>
-            `;
+            card.innerHTML = `${bgHtml}<h4>${c.name}</h4>`;
             gridCont.appendChild(card);
         });
     }
 
-    // Footer
-    if (document.getElementById('footer-address')) document.getElementById('footer-address').innerText = address;
-    if (document.getElementById('footer-maps-link')) document.getElementById('footer-maps-link').href = mapsLink;
+    // --- DINAMISMO DE PÁGINA DE CATEGORÍA ---
+    const currPath = window.location.pathname.split('/').pop() || 'index.html';
+    const currCat = cats.find(c => c.link === currPath);
+    
+    if (currCat) {
+        // Actualizar Banner de la página (Ropa, Perfumes, etc)
+        const bSub = document.querySelector('.page-banner .banner-subtitle');
+        const bTitle = document.querySelector('.page-banner .banner-title');
+        const bDesc = document.querySelector('.page-banner .banner-desc');
+        
+        if (bSub) bSub.innerText = currCat.subtitle || '';
+        if (bTitle) bTitle.innerText = `CATÁLOGO ${currCat.name.toUpperCase()}`;
+        if (bDesc) bDesc.innerText = currCat.description || '';
+
+        // Actualizar Filtros de Sub-categoría
+        const filterBar = document.querySelector('.sub-filter-bar');
+        if (filterBar) {
+            const subs = await window.dbActions.getSubCategories(currCat.id);
+            if (subs.length > 0) {
+                let filterHtml = `<button class="sub-filter active" data-sub="all">TODO</button>`;
+                subs.forEach(s => {
+                    filterHtml += `<button class="sub-filter" data-sub="${s.name.toLowerCase()}">${s.name.toUpperCase()}</button>`;
+                });
+                filterBar.innerHTML = filterHtml;
+                // Re-bind events (ropa.js / perfumes.js handle the actual click logic if called after)
+            }
+        }
+    }
 }
 
 

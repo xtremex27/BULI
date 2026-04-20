@@ -69,7 +69,7 @@ window.dbActions = {
     // CATEGORÍAS
     getCategories: async () => {
         if (!supabaseClient) return [];
-        const { data, error } = await supabaseClient.from('categories').select('*');
+        const { data, error } = await supabaseClient.from('categories').select('*').order('name');
         if (error) {
             console.error("Error cargando categorías:", error);
             return [];
@@ -77,16 +77,43 @@ window.dbActions = {
         return data;
     },
     
-    addCategory: async (name, link, image) => {
+    saveCategory: async (cat) => {
         if (!supabaseClient) return;
-        const { error } = await supabaseClient.from('categories').insert([{ name, link, image }]);
-        if (error) console.error("Error al añadir categoría:", error);
+        const { error } = await supabaseClient.from('categories').upsert(cat);
+        if (error) console.error("Error al guardar categoría:", error);
     },
     
     deleteCategory: async (id) => {
         if (!supabaseClient) return;
         const { error } = await supabaseClient.from('categories').delete().eq('id', id);
         if (error) console.error("Error al eliminar categoría:", error);
+    },
+
+    // SUB-CATEGORÍAS
+    getSubCategories: async (categoryId = null) => {
+        if (!supabaseClient) return [];
+        let query = supabaseClient.from('sub_categories').select('*').order('name');
+        if (categoryId) {
+            query = query.eq('category_id', categoryId);
+        }
+        const { data, error } = await query;
+        if (error) {
+            console.error("Error cargando sub-categorías:", error);
+            return [];
+        }
+        return data;
+    },
+
+    saveSubCategory: async (sub) => {
+        if (!supabaseClient) return;
+        const { error } = await supabaseClient.from('sub_categories').upsert(sub);
+        if (error) console.error("Error al guardar sub-categoría:", error);
+    },
+
+    deleteSubCategory: async (id) => {
+        if (!supabaseClient) return;
+        const { error } = await supabaseClient.from('sub_categories').delete().eq('id', id);
+        if (error) console.error("Error al eliminar sub-categoría:", error);
     }
 };
 
