@@ -17,7 +17,7 @@ async function startHome() {
 }
 
 
-function renderWithRetry(attempts) {
+async function renderWithRetry(attempts) {
     const ropaCont = document.getElementById('ropa-container');
     const perfCont = document.getElementById('perfumes-container');
     
@@ -26,7 +26,7 @@ function renderWithRetry(attempts) {
         return;
     }
 
-    const allProducts = window.dbActions.getProducts();
+    const allProducts = await window.dbActions.getProducts();
     
     if (allProducts && allProducts.length > 0) {
         ui.updateProducts(allProducts);
@@ -39,11 +39,11 @@ function renderWithRetry(attempts) {
 function generateProductHtml(product) {
     try {
         const price = product.price || 0;
-        const prevPrice = product.prevPrice || 0;
+        const prev_price = product.prev_price || 0;
         const hasDiscount = product.discount && product.discount !== "null" && product.discount !== "";
         
         let priceHtml = hasDiscount 
-            ? `<span class="original-price">S/${Number(prevPrice).toFixed(2)}</span><span class="product-price">S/${Number(price).toFixed(2)}</span>`
+            ? `<span class="original-price">S/${Number(prev_price).toFixed(2)}</span><span class="product-price">S/${Number(price).toFixed(2)}</span>`
             : `<span class="product-price">S/${Number(price).toFixed(2)}</span>`;
         
         let badgeHtml = hasDiscount ? `<div class="sale-badge">${product.discount}</div>` : '';

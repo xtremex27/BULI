@@ -72,9 +72,14 @@ function initUI() {
 }
 
 // Modal Logic
-window.openProductModal = function(productId) {
-    const currentProducts = window.dbActions.getProducts();
-    const product = currentProducts.find(p => p.id == productId);
+window.openProductModal = async function(productId) {
+    // Usar allProducts si ya están cargados, sino pedirlos
+    let product = allProducts.find(p => p.id == productId);
+    
+    if (!product) {
+        const products = await window.dbActions.getProducts();
+        product = products.find(p => p.id == productId);
+    }
     
     if (!product) {
         console.error("Producto no encontrado:", productId);
@@ -96,11 +101,12 @@ window.openProductModal = function(productId) {
     if (modalImg) modalImg.src = product.image;
     if (modalCat) modalCat.innerText = product.category;
     if (modalTitle) modalTitle.innerText = product.name;
-    if (modalPrice) modalPrice.innerText = `S/ ${product.price.toFixed(2)}`;
+    if (modalPrice) modalPrice.innerText = `S/ ${Number(product.price).toFixed(2)}`;
     
     if (modalPrev) {
-        if (product.prevPrice > 0) {
-            modalPrev.innerText = `S/ ${product.prevPrice.toFixed(2)}`;
+        const prevPrice = product.prev_price || 0;
+        if (prevPrice > 0) {
+            modalPrev.innerText = `S/ ${Number(prevPrice).toFixed(2)}`;
             modalPrev.style.display = 'inline';
         } else {
             modalPrev.style.display = 'none';
@@ -214,13 +220,13 @@ function closeMobileMenu() {
 }
 
 // WhatsApp
-function checkoutToWhatsApp() {
+async function checkoutToWhatsApp() {
     if (cart.length === 0) {
         alert("Tu carrito está vacío.");
         return;
     }
 
-    const phone = window.dbActions.getConfig('whatsapp') || '51933489344';
+    const phone = await window.dbActions.getConfig('whatsapp') || '51933489344';
     let message = "¡Hola BULIS! 🔷\nQuiero realizar un pedido:\n\n";
     
     cart.forEach(item => {
@@ -256,18 +262,16 @@ function initAnimations() {
 }
 
 // CMS: Dynamic Injection
-function applyGlobalConfig() {
+async function applyGlobalConfig() {
     // Helpers para obtener dato de DB o Default
-    const getC = (key) => window.dbActions.getConfig(key) || window.dbDefaults.config[key];
-    
-    const name = getC('store_name');
-    const logo = getC('store_logo');
-    const marqueeData = getC('marquee_items');
-    const address = getC('store_address');
-    const mapsLink = getC('store_maps_link');
-    const primaryColor = getC('primary_color');
-    const bannerTitle = getC('banner_title');
-    const bannerSub = getC('banner_subtitle');
+    const name = await window.dbActions.getConfig('store_name') || window.dbDefaults.config['store_name'];
+    const logo = await window.dbActions.getConfig('store_logo') || window.dbDefaults.config['store_logo'];
+    const marqueeData = await window.dbActions.getConfig('marquee_items') || window.dbDefaults.config['marquee_items'];
+    const address = await window.dbActions.getConfig('store_address') || window.dbDefaults.config['store_address'];
+    const mapsLink = await window.dbActions.getConfig('store_maps_link') || window.dbDefaults.config['store_maps_link'];
+    const primaryColor = await window.dbActions.getConfig('primary_color') || window.dbDefaults.config['primary_color'];
+    const bannerTitle = await window.dbActions.getConfig('banner_title') || window.dbDefaults.config['banner_title'];
+    const bannerSub = await window.dbActions.getConfig('banner_subtitle') || window.dbDefaults.config['banner_subtitle'];
 
     // Theme (Inject CSS Variable)
     document.documentElement.style.setProperty('--text-main', primaryColor);
@@ -294,7 +298,7 @@ function applyGlobalConfig() {
     const mobileNavCont = document.getElementById('mobile-dynamic-nav');
     
     if (navCont || mobileNavCont) {
-        let cats = window.dbActions.getCategories();
+        let cats = await window.dbActions.getCategories();
         if (cats.length === 0) cats = window.dbDefaults.categories;
         
         let navHtml = `<a href="index.html">INICIO</a>`;
@@ -309,7 +313,7 @@ function applyGlobalConfig() {
     // Category Grid (Home)
     const gridCont = document.getElementById('category-grid');
     if (gridCont) {
-        let cats = window.dbActions.getCategories();
+        let cats = await window.dbActions.getCategories();
         if (cats.length === 0) cats = window.dbDefaults.categories;
         
         gridCont.innerHTML = '';
@@ -318,7 +322,6 @@ function applyGlobalConfig() {
             card.href = c.link;
             card.className = 'category-card';
             
-            // Si no hay imagen, no ponemos el div de fondo para que se vea el color del CSS
             const bgHtml = c.image ? `<div class="category-bg" style="background-image: url('${c.image}');"></div>` : '';
             
             card.innerHTML = `

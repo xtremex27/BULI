@@ -14,6 +14,7 @@
         opacity: 0;
         transform: translateY(40px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -21,8 +22,13 @@
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes slideDown {
@@ -30,6 +36,7 @@
         opacity: 0;
         transform: translateY(-20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -37,7 +44,8 @@
 }
 
 .animate-on-scroll {
-    opacity: 1; /* Visible por defecto para evitar pantallas en blanco */
+    opacity: 1;
+    /* Visible por defecto para evitar pantallas en blanco */
     transform: translateY(0);
     transition: opacity 0.8s ease-out, transform 0.8s ease-out;
 }
@@ -82,7 +90,8 @@
 }
 
 #cart-total-header {
-    display: none; /* Ocultar el precio para que el botón sea pequeño como el de ADMIN */
+    display: none;
+    /* Ocultar el precio para que el botón sea pequeño como el de ADMIN */
 }
 
 
@@ -115,7 +124,7 @@ a {
     overflow: hidden;
     white-space: nowrap;
     position: relative;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .marquee {
@@ -125,8 +134,13 @@ a {
 }
 
 @keyframes marquee-scroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
 }
 
 .marquee span {
@@ -333,7 +347,7 @@ a {
     overflow: hidden;
     position: relative;
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid rgba(0,0,0,0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .category-bg {
@@ -366,7 +380,7 @@ a {
 
 .category-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
 }
 
 .category-card:hover::after {
@@ -385,7 +399,7 @@ a {
     font-family: 'Teko', sans-serif;
     letter-spacing: 2px;
     text-transform: uppercase;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.4s ease;
 }
 
@@ -401,7 +415,7 @@ a {
 
 .promo-card h4 {
     background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255,255,255,0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .promo-card:hover h4 {
@@ -624,12 +638,14 @@ a {
     position: relative;
     aspect-ratio: 1 / 1;
     overflow: hidden;
-    background: transparent; /* Sin fondo molesto */
+    background: transparent;
+    /* Sin fondo molesto */
     display: flex;
-    align-items: center; 
+    align-items: center;
     justify-content: center;
     text-decoration: none;
-    color: #000; /* Texto oscuro por defecto */
+    color: #000;
+    /* Texto oscuro por defecto */
     transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease;
 }
 
@@ -647,12 +663,13 @@ a {
 
 /* Caso especial Ofertas (Rojo) */
 .category-card[href="#ropa"] {
-    background: #8b0000; 
+    background: #8b0000;
 }
 
 .category-card:hover {
     transform: translateY(-10px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.08); /* Sombra elegante */
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    /* Sombra elegante */
 }
 
 .category-card:hover .category-bg {
@@ -666,11 +683,12 @@ a {
     font-size: 2rem;
     letter-spacing: 2px;
     text-transform: uppercase;
-    background: transparent; /* Solo la imagen nomás */
+    background: transparent;
+    /* Solo la imagen nomás */
     color: #000;
     padding: 10px;
     text-align: center;
-    text-shadow: 0 2px 10px rgba(255,255,255,0.8);
+    text-shadow: 0 2px 10px rgba(255, 255, 255, 0.8);
     transition: color 0.3s;
 }
 
@@ -689,6 +707,7 @@ a {
     .category-grid {
         grid-template-columns: 1fr;
     }
+
     .category-card h4 {
         font-size: 1.4rem;
         min-width: 140px;
@@ -869,14 +888,15 @@ a {
 .nav-sidebar {
     position: fixed;
     top: 0;
-    right: -320px; /* Oculto a la derecha */
+    right: -320px;
+    /* Oculto a la derecha */
     width: 300px;
     height: 100vh;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(15px);
     z-index: 500;
     transition: right 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-    box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
 }
@@ -922,7 +942,8 @@ a {
 
 /* ============ HAMBURGER MENU ============ */
 .menu-toggle {
-    display: none; /* Oculto en desktop */
+    display: none;
+    /* Oculto en desktop */
     cursor: pointer;
     width: 30px;
     height: 30px;
@@ -961,20 +982,24 @@ a {
     }
 
     .nav-links {
-        display: none; /* Usamos el sidebar en móvil */
+        display: none;
+        /* Usamos el sidebar en móvil */
     }
 
     .menu-toggle {
-        display: block; /* Mostrar hamburguesa */
+        display: block;
+        /* Mostrar hamburguesa */
     }
 
     .navbar {
         padding: 15px 5%;
-        justify-content: flex-start; /* Logo y menú a la izquierda */
+        justify-content: flex-start;
+        /* Logo y menú a la izquierda */
     }
 
     .header-actions {
-        margin-left: auto; /* Acciones a la derecha */
+        margin-left: auto;
+        /* Acciones a la derecha */
     }
 
     .nav-logo {
@@ -1406,13 +1431,16 @@ a {
         grid-template-columns: 1fr;
         max-height: 100vh;
     }
+
     .modal-image-side {
         padding: 20px;
         height: 250px;
     }
+
     .modal-info-side {
         padding: 25px;
     }
+
     .modal-title {
         font-size: 2rem;
     }

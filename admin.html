@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | BULIS</title>
     <link href="https://fonts.googleapis.com/css2?family=Teko:wght@600&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
-    <script src="sql-wasm.js"></script>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="db.js"></script>
     <style>
         :root { --main: #000; --bg: #f8f9fa; --border: #eee; --accent: #2ecc71; }
@@ -50,6 +51,15 @@
         .form-group.full { grid-column: span 2; }
         label { display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 8px; color: #666; text-transform: uppercase; }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 0.9rem; }
+
+        /* Preview Style */
+        .image-upload-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 0; gap: 15px; }
+        .preview-container { width: 150px; height: 150px; border-radius: 50%; border: 4px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.1); overflow: hidden; cursor: pointer; position: relative; background: #eee; transition: 0.3s; }
+        .preview-container:hover { transform: scale(1.05); border-color: var(--accent); }
+        .preview-container img { width: 100%; height: 100%; object-fit: cover; }
+        .preview-placeholder { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #aaa; }
+        .upload-label { font-size: 0.8rem; color: var(--accent); font-weight: 700; cursor: pointer; text-transform: uppercase; }
+        #p-file, #cat-file { display: none; }
     </style>
 </head>
 <body>
@@ -204,8 +214,16 @@
                         <textarea id="p-desc" rows="3"></textarea>
                     </div>
                     <div class="form-group full">
-                        <label>URL de Imagen</label>
-                        <input type="text" id="p-img" placeholder="img/productos/..." required>
+                        <label style="text-align: center;">Imagen del Producto</label>
+                        <div class="image-upload-wrapper">
+                            <div class="preview-container" onclick="document.getElementById('p-file').click()">
+                                <div class="preview-placeholder" id="p-placeholder">📷</div>
+                                <img id="p-preview" style="display: none;">
+                            </div>
+                            <label for="p-file" class="upload-label">Toca para cambiar imagen</label>
+                            <input type="file" id="p-file" accept="image/*">
+                            <input type="hidden" id="p-img">
+                        </div>
                     </div>
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:30px;">
@@ -229,34 +247,74 @@
                     <label>Enlace de Destino</label>
                     <input type="text" id="cat-link" placeholder="ropa.html o #id" required>
                 </div>
-                <div class="form-group">
-                    <label>URL de Imagen</label>
-                    <input type="text" id="cat-img" placeholder="img/categorias/..." required>
+                <div class="form-group full">
+                    <label style="text-align: center;">Imagen de la Categoría</label>
+                    <div class="image-upload-wrapper">
+                        <div class="preview-container" onclick="document.getElementById('cat-file').click()">
+                            <div class="preview-placeholder" id="cat-placeholder">📷</div>
+                            <img id="cat-preview" style="display: none;">
+                        </div>
+                        <label for="cat-file" class="upload-label">Toca para cambiar imagen</label>
+                        <input type="file" id="cat-file" accept="image/*">
+                        <input type="hidden" id="cat-img">
+                    </div>
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:30px;">
                     <button type="button" class="btn" style="background:#eee;" onclick="closeCatModal()">Cancelar</button>
                     <button type="submit" class="btn btn-main">Guardar Categoría</button>
                 </div>
             </form>
-        </div>
-    </div>
+           <script>
+        // Check Auth Profesional
+        async function checkSession() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                window.location.href = 'admin-login.html';
+            }
+        }
+        checkSession();
 
+        // Previsualización de Imágenes
+        function setupPreview(fileInputId, imgId, placeholderId) {
+            const input = document.getElementById(fileInputId);
+            const img = document.getElementById(imgId);
+            const placeholder = document.getElementById(placeholderId);
 
-
-    <script>
-        // Check Auth
-        if (!sessionStorage.getItem('bulis_admin')) {
-            window.location.href = 'admin-login.html';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        img.src = event.target.result;
+                        img.style.display = 'block';
+                        placeholder.style.display = 'none';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
         }
 
         async function initAdmin() {
-            await initDB();
-            loadProducts();
-            loadConfig();
+            // Asegurar que dbActions esté disponible
+            if (!window.dbActions || typeof window.dbActions.getProducts !== 'function') {
+                setTimeout(initAdmin, 500);
+                return;
+            }
+            
+            // Activar modo superusuario para el admin
+            await window.dbActions.initAdminMode();
+            
+            await loadProducts();
+            await loadCategories();
+            await loadConfig();
+
+            // Setup previews
+            setupPreview('p-file', 'p-preview', 'p-placeholder');
+            setupPreview('cat-file', 'cat-preview', 'cat-placeholder');
         }
 
-        function loadProducts() {
-            const products = window.dbActions.getProducts();
+        async function loadProducts() {
+            const products = await window.dbActions.getProducts();
             const tbody = document.getElementById('products-tbody');
             tbody.innerHTML = '';
             
@@ -264,9 +322,9 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>#${p.id}</td>
-                    <td><img src="${p.image}" class="product-img-small"></td>
+                    <td><img src="${p.image}" class="product-img-small" onerror="this.src='https://via.placeholder.com/50/eee/000'"></td>
                     <td><b>${p.name}</b></td>
-                    <td>S/ ${p.price.toFixed(2)}</td>
+                    <td>S/ ${parseFloat(p.price).toFixed(2)}</td>
                     <td>${p.discount || '-'}</td>
                     <td style="text-transform:uppercase; font-size:0.75rem;">${p.category}</td>
                     <td>
@@ -279,22 +337,22 @@
             });
         }
 
-        function deleteProduct(id) {
+        async function deleteProduct(id) {
             if (confirm('¿Estas seguro de eliminar este producto?')) {
-                window.dbActions.deleteProduct(id);
-                loadProducts();
+                await window.dbActions.deleteProduct(id);
+                await loadProducts();
             }
         }
 
-        function loadCategories() {
-            const cats = window.dbActions.getCategories();
+        async function loadCategories() {
+            const cats = await window.dbActions.getCategories();
             const tbody = document.getElementById('categories-tbody');
             tbody.innerHTML = '';
             cats.forEach(c => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>#${c.id}</td>
-                    <td><img src="${c.image || 'img/placeholder.png'}" class="product-img-small"></td>
+                    <td><img src="${c.image || 'https://via.placeholder.com/50/eee/000'}" class="product-img-small"></td>
                     <td><b>${c.name}</b></td>
                     <td><code>${c.link}</code></td>
                     <td>
@@ -305,16 +363,21 @@
             });
         }
 
-        function deleteCategory(id) {
+        async function deleteCategory(id) {
             if (confirm('¿Eliminar esta categoría?')) {
-                window.dbActions.deleteCategory(id);
-                loadCategories();
+                await window.dbActions.deleteCategory(id);
+                await loadCategories();
             }
         }
 
         const catModal = document.getElementById('cat-modal-overlay');
         function openCatModal() {
             document.getElementById('cat-form').reset();
+            
+            // Reset preview
+            document.getElementById('cat-preview').style.display = 'none';
+            document.getElementById('cat-placeholder').style.display = 'flex';
+            
             catModal.classList.add('show');
         }
 
@@ -322,27 +385,64 @@
             catModal.classList.remove('show');
         }
 
-        document.getElementById('cat-form').onsubmit = (e) => {
+        // Subida a Cloudinary
+        async function uploadImage(file, button) {
+            const oldText = button.innerText;
+            button.innerText = 'SUBIENDO IMAGEN...';
+            button.disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', 'ml_default'); // Usuario debe configurar esto como 'Unsigned' en Cloudinary
+
+            try {
+                const res = await fetch(`https://api.cloudinary.com/v1_1/dxwkdkqln/image/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                button.innerText = oldText;
+                button.disabled = false;
+                return data.secure_url;
+            } catch (e) {
+                console.error("Error upload:", e);
+                alert("Error al subir a Cloudinary. Verifica tu conexión.");
+                button.innerText = oldText;
+                button.disabled = false;
+                return null;
+            }
+        }
+
+        document.getElementById('cat-form').onsubmit = async (e) => {
             e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
+            const fileInput = document.getElementById('cat-file');
+            let imgUrl = document.getElementById('cat-img').value;
+
+            if (fileInput.files.length > 0) {
+                const uploaded = await uploadImage(fileInput.files[0], submitBtn);
+                if (uploaded) imgUrl = uploaded;
+            }
+
             const name = document.getElementById('cat-name').value;
             const link = document.getElementById('cat-link').value;
-            const img = document.getElementById('cat-img').value;
             
-            window.dbActions.addCategory(name, link, img);
+            await window.dbActions.addCategory(name, link, imgUrl);
             closeCatModal();
-            loadCategories();
+            await loadCategories();
         };
 
-        function loadConfig() {
-            const wa = window.dbActions.getConfig('whatsapp') || '51933489344';
-            const name = window.dbActions.getConfig('store_name') || 'BULIS';
-            const logo = window.dbActions.getConfig('store_logo') || 'img/logobuli.png';
-            const addr = window.dbActions.getConfig('store_address') || '';
-            const maps = window.dbActions.getConfig('store_maps_link') || '';
-            const marq = window.dbActions.getConfig('marquee_items') || '';
-            const color = window.dbActions.getConfig('primary_color') || '#000000';
-            const bSub = window.dbActions.getConfig('banner_subtitle') || '';
-            const bTitle = window.dbActions.getConfig('banner_title') || '';
+        async function loadConfig() {
+            const wa = await window.dbActions.getConfig('whatsapp') || '51933489344';
+            const name = await window.dbActions.getConfig('store_name') || 'BULIS';
+            const logo = await window.dbActions.getConfig('store_logo') || 'img/logobuli.png';
+            const addr = await window.dbActions.getConfig('store_address') || '';
+            const maps = await window.dbActions.getConfig('store_maps_link') || '';
+            const marq = await window.dbActions.getConfig('marquee_items') || '';
+            const color = await window.dbActions.getConfig('primary_color') || '#000000';
+            const bSub = await window.dbActions.getConfig('banner_subtitle') || '';
+            const bTitle = await window.dbActions.getConfig('banner_title') || '';
 
             document.getElementById('cfg-whatsapp').value = wa;
             document.getElementById('cfg-name').value = name;
@@ -355,33 +455,38 @@
             document.getElementById('cfg-banner-sub').value = bSub;
             document.getElementById('cfg-banner-title').value = bTitle;
             
-            // Sync color picker with text input
             document.getElementById('cfg-color-picker').oninput = (e) => {
                 document.getElementById('cfg-color').value = e.target.value;
             };
         }
 
-        function saveAllConfigs() {
-            window.dbActions.updateConfig('whatsapp', document.getElementById('cfg-whatsapp').value);
-            window.dbActions.updateConfig('store_name', document.getElementById('cfg-name').value);
-            window.dbActions.updateConfig('store_logo', document.getElementById('cfg-logo').value);
-            window.dbActions.updateConfig('store_address', document.getElementById('cfg-address').value);
-            window.dbActions.updateConfig('store_maps_link', document.getElementById('cfg-maps').value);
-            window.dbActions.updateConfig('marquee_items', document.getElementById('cfg-marquee').value);
-            window.dbActions.updateConfig('primary_color', document.getElementById('cfg-color').value);
-            window.dbActions.updateConfig('banner_subtitle', document.getElementById('cfg-banner-sub').value);
-            window.dbActions.updateConfig('banner_title', document.getElementById('cfg-banner-title').value);
+        async function saveAllConfigs() {
+            const btn = event.target;
+            const oldText = btn.innerText;
+            btn.innerText = 'GUARDANDO...';
+            btn.disabled = true;
+
+            await window.dbActions.updateConfig('whatsapp', document.getElementById('cfg-whatsapp').value);
+            await window.dbActions.updateConfig('store_name', document.getElementById('cfg-name').value);
+            await window.dbActions.updateConfig('store_logo', document.getElementById('cfg-logo').value);
+            await window.dbActions.updateConfig('store_address', document.getElementById('cfg-address').value);
+            await window.dbActions.updateConfig('store_maps_link', document.getElementById('cfg-maps').value);
+            await window.dbActions.updateConfig('marquee_items', document.getElementById('cfg-marquee').value);
+            await window.dbActions.updateConfig('primary_color', document.getElementById('cfg-color').value);
+            await window.dbActions.updateConfig('banner_subtitle', document.getElementById('cfg-banner-sub').value);
+            await window.dbActions.updateConfig('banner_title', document.getElementById('cfg-banner-title').value);
             
+            btn.innerText = oldText;
+            btn.disabled = false;
             alert('¡Configuración de tienda actualizada con éxito!');
         }
-
-
 
         function switchTab(tab) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             document.getElementById(`tab-${tab}`).classList.add('active');
-            event.target.classList.add('active');
+            // Nota: event.target puede ser nulo en llamadas automáticas
+            if (event && event.target) event.target.classList.add('active');
         }
 
         const formOverlay = document.getElementById('form-overlay');
@@ -389,6 +494,11 @@
             document.getElementById('product-form').reset();
             document.getElementById('p-id').value = '';
             document.getElementById('modal-title').innerText = 'NUEVO PRODUCTO';
+            
+            // Reset preview
+            document.getElementById('p-preview').style.display = 'none';
+            document.getElementById('p-placeholder').style.display = 'flex';
+            
             formOverlay.classList.add('show');
         }
 
@@ -396,34 +506,43 @@
             formOverlay.classList.remove('show');
         }
 
-        document.getElementById('product-form').onsubmit = (e) => {
+        document.getElementById('product-form').onsubmit = async (e) => {
             e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+
+            let imgUrl = document.getElementById('p-img').value;
+            const fileInput = document.getElementById('p-file');
+
+            if (fileInput.files.length > 0) {
+                const uploaded = await uploadImage(fileInput.files[0], submitBtn);
+                if (uploaded) imgUrl = uploaded;
+            }
+
             const p = {
                 name: document.getElementById('p-name').value,
                 category: document.getElementById('p-category').value,
                 sub: document.getElementById('p-sub').value,
                 price: parseFloat(document.getElementById('p-price').value),
-                prevPrice: parseFloat(document.getElementById('p-prev').value) || 0,
-                discount: null, // Podria calcularse auto
+                prev_price: parseFloat(document.getElementById('p-prev').value) || 0,
+                discount: null,
                 sizes: document.getElementById('p-sizes').value,
                 colors: document.getElementById('p-colors').value,
                 desc: document.getElementById('p-desc').value,
-                image: document.getElementById('p-img').value
+                image: imgUrl
             };
             
-            // Calculo de descuento auto si hay precio anterior
-            if (p.prevPrice > p.price) {
-                const d = Math.round(((p.prevPrice - p.price) / p.prevPrice) * 100);
+            if (p.prev_price > p.price) {
+                const d = Math.round(((p.prev_price - p.price) / p.prev_price) * 100);
                 p.discount = `-${d}%`;
             }
 
-            window.dbActions.addProduct(p);
+            await window.dbActions.addProduct(p);
             closeForm();
-            loadProducts();
+            await loadProducts();
         };
 
-        function logout() {
-            sessionStorage.removeItem('bulis_admin');
+        async function logout() {
+            await supabaseClient.auth.signOut();
             window.location.href = 'index.html';
         }
 
