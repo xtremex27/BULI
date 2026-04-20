@@ -8,9 +8,16 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="db.js"></script>
+    <script>
+        // Bloqueo de acceso instantáneo
+        if (sessionStorage.getItem('bulis_admin') !== 'true') {
+            window.location.href = 'admin-login.html';
+        }
+    </script>
     <style>
         :root { --main: #000; --bg: #f8f9fa; --border: #eee; --accent: #2ecc71; }
-        body { font-family: 'Roboto', sans-serif; background: var(--bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        body { display: none; font-family: 'Roboto', sans-serif; background: var(--bg); margin: 0; height: 100vh; overflow: hidden; }
+        body.authenticated { display: flex; }
         
         /* Sidebar */
         .sidebar { width: 260px; background: #000; color: #fff; padding: 30px 0; display: flex; flex-direction: column; }
@@ -265,10 +272,8 @@
                 </div>
             </form>
            <script>
-        // Check Auth Sencillo
-        if (!sessionStorage.getItem('bulis_admin')) {
-            window.location.href = 'admin-login.html';
-        }
+        // Mostrar contenido si está autenticado
+        document.body.classList.add('authenticated');
 
         // Previsualización de Imágenes
         function setupPreview(fileInputId, imgId, placeholderId) {
@@ -297,9 +302,7 @@
                 return;
             }
             
-            // Activar modo superusuario para el admin
-            await window.dbActions.initAdminMode();
-            
+            // Iniciar carga de datos
             await loadProducts();
             await loadCategories();
             await loadConfig();
