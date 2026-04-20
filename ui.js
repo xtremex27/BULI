@@ -309,9 +309,15 @@ async function applyGlobalConfig() {
     }
 
     if (navCont || mobileNavCont) {
-        let navHtml = `<a href="index.html">INICIO</a>`;
+        const params = new URLSearchParams(window.location.search);
+        const currentId = params.get('id');
+        const currPath = window.location.pathname.split('/').pop();
+
+        let navHtml = `<a href="index.html" class="${currPath === 'index.html' || !currPath ? 'active' : ''}">INICIO</a>`;
         cats.forEach(c => {
-            navHtml += `<a href="${c.link}">${c.name}</a>`;
+            const dynamicLink = `categoria.html?id=${c.id}`;
+            const isActive = currentId == c.id ? 'active' : '';
+            navHtml += `<a href="${dynamicLink}" class="${isActive}">${c.name}</a>`;
         });
         if (navCont) navCont.innerHTML = navHtml;
         if (mobileNavCont) mobileNavCont.innerHTML = navHtml;
@@ -322,17 +328,16 @@ async function applyGlobalConfig() {
     if (gridCont) {
         gridCont.innerHTML = '';
         cats.forEach(c => {
+            const dynamicLink = `categoria.html?id=${c.id}`;
             const card = document.createElement('a');
-            card.href = c.link;
+            card.href = dynamicLink;
             card.className = 'category-card';
             const bgHtml = c.image ? `<div class="category-bg" style="background-image: url('${c.image}');"></div>` : '';
             card.innerHTML = `${bgHtml}<h4>${c.name}</h4>`;
             gridCont.appendChild(card);
 
-            // --- NUEVO: Sincronizar Secciones de Productos en el Inicio ---
-            // Buscamos secciones que coincidan con el link (ej: ropa.html -> id="ropa")
-            const sectionId = c.link.replace('.html', '').replace('#', '');
-            const section = document.getElementById(sectionId);
+            // --- Sincronizar Secciones de Productos en el Inicio ---
+            const section = document.getElementById(c.name.toLowerCase());
             if (section) {
                 const h2 = section.querySelector('.section-heading h2');
                 const p = section.querySelector('.section-heading p');
@@ -403,7 +408,7 @@ async function applyGlobalConfig() {
         if (title) el.appendChild(title);
         cats.forEach(c => {
             const link = document.createElement('a');
-            link.href = c.link;
+            link.href = `categoria.html?id=${c.id}`;
             link.innerText = c.name;
             el.appendChild(link);
         });

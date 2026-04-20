@@ -28,7 +28,7 @@ window.dbActions = {
         if (!supabaseClient) return [];
         let query = supabaseClient.from('products').select('*');
         if (category) {
-            query = query.eq('category', category);
+            query = query.ilike('category', category);
         }
         const { data, error } = await query;
         if (error) {
@@ -37,11 +37,24 @@ window.dbActions = {
         }
         return data;
     },
+
+    getProductsByCategoryId: async (categoryId) => {
+        if (!supabaseClient) return [];
+        const { data, error } = await supabaseClient.from('products')
+            .select('*')
+            .eq('category_id', categoryId);
+        
+        if (error) {
+            console.error("Error cargando productos por ID:", error);
+            return [];
+        }
+        return data;
+    },
     
-    addProduct: async (p) => {
+    saveProduct: async (p) => {
         if (!supabaseClient) return;
-        const { error } = await supabaseClient.from('products').insert([p]);
-        if (error) console.error("Error al añadir producto:", error);
+        const { error } = await supabaseClient.from('products').upsert(p);
+        if (error) console.error("Error al guardar producto:", error);
     },
     
     deleteProduct: async (id) => {

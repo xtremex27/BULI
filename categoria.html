@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BULIS | Categoria</title>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="db.js"></script>
+    <script src="ui.js"></script>
+</head>
+<body>
+    <header>
+        <div class="top-bar">
+            <div class="marquee" id="main-marquee">
+                <!-- Dinámico -->
+            </div>
+        </div>
+        <div class="navbar">
+            <a href="index.html" class="logo">
+                <img src="img/logobuli.png" alt="Logo" class="nav-logo" id="main-logo"> 
+                <span class="store-name"></span>
+            </a>
+            <nav class="nav-links" id="dynamic-nav">
+                <a href="index.html">INICIO</a>
+                <!-- Inyectado dinámicamente -->
+            </nav>
+            <div class="header-actions">
+                <div class="cart-trigger" id="cart-btn">
+                    <span id="cart-total-header">S/ 0.00</span>
+                    <div class="cart-icon-wrapper">
+                        <svg viewBox="0 0 24 24" class="bag-icon"><path fill="currentColor" d="M17,18C15.89,18 15,18.89 15,20A2,2 0 0,0 17,22A2,2 0 0,0 19,20C19,18.89 18.11,18 17,18M7,18C5.89,18 5,18.89 5,20A2,2 0 0,0 7,22A2,2 0 0,0 9,20C9,18.89 8.11,18 7,18M7.27,18L5.7,13.12L2,4.27H1V2.27H3.31L4.27,4.27H21V6.27L19.73,9H7.29L8.1,10.63H19V12.63H8.1L7.27,18Z"/></svg>
+                        <span id="cart-count">0</span>
+                    </div>
+                </div>
+                <div class="header-right-item" style="margin-left: 15px; display: flex; align-items: center; gap: 10px;">
+                    <a href="admin-login.html" style="color: var(--text-main); text-decoration: none; font-size: 0.8rem; border: 1px solid #ddd; padding: 5px 10px; border-radius: 4px;">ADMIN</a>
+                    <div class="menu-toggle" id="menu-toggle" style="margin-right: 0;">
+                        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z"/></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h2>Carrito</h2>
+            <button id="close-cart" class="close-btn">&times;</button>
+        </div>
+        <div class="cart-items" id="cart-items"></div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cart-total-price">S/ 0.00</span>
+            </div>
+            <button class="checkout-btn">Finalizar Compra</button>
+        </div>
+    </div>
+    <div class="cart-overlay" id="cart-overlay"></div>
+
+    <!-- Mobile Nav Sidebar -->
+    <div class="nav-sidebar" id="nav-sidebar">
+        <div class="sidebar-header">
+            <span class="store-name-text">BULIS</span>
+            <button id="close-menu" class="close-btn">&times;</button>
+        </div>
+        <div class="sidebar-nav-links" id="mobile-dynamic-nav">
+            <!-- Inyectado dinámicamente -->
+        </div>
+    </div>
+
+    <main>
+        <!-- Page Banner -->
+        <section class="page-banner animate-on-scroll">
+            <p class="banner-subtitle" id="cat-banner-subtitle">CARGANDO...</p>
+            <h1 class="banner-title" id="cat-banner-title">CATEGORÍA</h1>
+            <p class="banner-desc" id="cat-banner-desc">Cargando descripción de la categoría...</p>
+        </section>
+
+        <!-- Filtros de subcategoría -->
+        <section class="sub-filter-bar" id="cat-sub-filters">
+            <!-- Dinámico -->
+        </section>
+
+        <!-- Grid de Productos -->
+        <section class="products-section">
+            <div class="product-grid" id="product-container"></div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-grid">
+            <div class="footer-col" id="footer-cats">
+                <h3>Categorías</h3>
+                <!-- Dinámico -->
+            </div>
+            <div class="footer-col">
+                <h3>Ayuda</h3>
+                <a href="#">Nosotros</a>
+                <a href="#">Preguntas Frecuentes</a>
+                <a href="admin-login.html" style="color: #666; font-size: 0.75rem; margin-top: 20px; display: block;">Panel Admin</a>
+            </div>
+            <div class="footer-col">
+                <h3>Contacto</h3>
+                <a href="#" id="footer-wa" target="_blank">WhatsApp</a>
+                <a href="#" id="footer-email">Correo</a>
+                <a href="#" id="footer-maps-link" target="_blank">📍 <span id="footer-address">Dirección</span></a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 <span class="store-name"></span>. Todos los derechos reservados.
+        </div>
+    </footer>
+
+    <!-- Product Modal -->
+    <div class="modal-overlay" id="product-modal-overlay">
+        <div class="product-modal">
+            <span class="modal-close" id="close-modal">&times;</span>
+            <div class="modal-image-side">
+                <img id="modal-img" src="" alt="">
+            </div>
+            <div class="modal-info-side">
+                <div class="modal-category" id="modal-category">CATEGORÍA</div>
+                <h2 class="modal-title" id="modal-title">Nombre del Producto</h2>
+                <div class="modal-prices">
+                    <span class="modal-price" id="modal-price">S/ 0.00</span>
+                    <span class="modal-prev-price" id="modal-prev-price">S/ 0.00</span>
+                </div>
+                <p class="modal-desc" id="modal-desc">Descripción del producto...</p>
+                
+                <div id="modal-options-container">
+                    <div class="modal-option-title">Talla / Tamaño</div>
+                    <div class="modal-options" id="modal-sizes"></div>
+                    <div class="modal-option-title">Color / Variante</div>
+                    <div class="modal-options" id="modal-colors"></div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="modal-btn-add" id="modal-add-btn">AGREGAR A LA BOLSA</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="categoria.js"></script>
+</body>
+</html>
