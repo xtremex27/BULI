@@ -67,6 +67,26 @@
         .preview-placeholder { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #aaa; }
         .upload-label { font-size: 0.8rem; color: var(--accent); font-weight: 700; cursor: pointer; text-transform: uppercase; }
         #p-file, #cat-file { display: none; }
+
+        /* Responsividad Admin */
+        .table-wrapper { width: 100%; overflow-x: auto; background: #fff; border-radius: 8px; margin-bottom: 20px; }
+        
+        @media (max-width: 768px) {
+            body { flex-direction: column; overflow-y: auto; height: auto; }
+            .sidebar { width: 100%; padding: 15px 0; height: auto; position: sticky; top: 0; z-index: 999; }
+            .sidebar-header { padding: 0 20px 10px; }
+            .logo { font-size: 1.8rem; text-align: center; }
+            .nav-items { display: flex; justify-content: center; overflow-x: auto; }
+            .nav-item { padding: 10px 15px; font-size: 0.8rem; white-space: nowrap; border-left: none; border-bottom: 3px solid transparent; }
+            .nav-item.active { border-bottom-color: var(--accent); }
+            .logout { padding: 10px 20px; text-align: center; border-top: none; }
+            .main { padding: 20px; }
+            .header-row { flex-direction: column; gap: 15px; align-items: flex-start; }
+            .btn { width: 100%; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-group.full { grid-column: span 1; }
+            .form-card { padding: 20px; width: 95%; }
+        }
     </style>
 </head>
 <body>
@@ -89,20 +109,22 @@
                 <h1>Gestión de Productos</h1>
                 <button class="btn btn-main" onclick="openAddModal()">+ Nuevo Producto</button>
             </div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Cód</th>
-                        <th>Imagen</th>
-                        <th>Nombre</th>
-                        <th>Precio</th>
-                        <th>Oferta</th>
-                        <th>Categoría</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="products-tbody"></tbody>
-            </table>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Cód</th>
+                            <th>Imagen</th>
+                            <th>Nombre</th>
+                            <th>Precio</th>
+                            <th>Oferta</th>
+                            <th>Categoría</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="products-tbody"></tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Tab Categorías -->
@@ -111,18 +133,20 @@
                 <h1>Gestión de Categorías</h1>
                 <button class="btn btn-main" onclick="openCatModal()">+ Nueva Categoría</button>
             </div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Imagen</th>
-                        <th>Nombre</th>
-                        <th>Enlace</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="categories-tbody"></tbody>
-            </table>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Imagen</th>
+                            <th>Nombre</th>
+                            <th>Enlace</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categories-tbody"></tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Tab Config -->
@@ -130,7 +154,7 @@
             <div class="header-row">
                 <h1>Ajustes de la Tienda</h1>
             </div>
-            <div style="background:#fff; padding:30px; border-radius:8px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div style="background:#fff; padding:20px; border-radius:8px; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
                 <div class="form-group">
                     <label>Nombre de la Tienda</label>
                     <input type="text" id="cfg-name">
@@ -158,19 +182,19 @@
                     <label>Título del Banner (Hero)</label>
                     <input type="text" id="cfg-banner-title">
                 </div>
-                <div class="form-group full">
+                <div class="form-group full" style="grid-column: 1 / -1;">
                     <label>Dirección Física</label>
                     <input type="text" id="cfg-address">
                 </div>
-                <div class="form-group full">
+                <div class="form-group full" style="grid-column: 1 / -1;">
                     <label>Enlace Google Maps</label>
                     <input type="text" id="cfg-maps">
                 </div>
-                <div class="form-group full">
+                <div class="form-group full" style="grid-column: 1 / -1;">
                     <label>Mensajes de Marquesina (Separados por punto y coma ';')</label>
                     <textarea id="cfg-marquee" rows="4"></textarea>
                 </div>
-                <div class="form-group full" style="margin-top: 20px;">
+                <div class="form-group full" style="grid-column: 1 / -1; margin-top: 20px;">
                     <button class="btn btn-accent" onclick="saveAllConfigs()" style="width: 100%;">GUARDAR TODOS LOS CAMBIOS</button>
                 </div>
             </div>
