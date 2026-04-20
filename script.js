@@ -3,7 +3,7 @@ async function startHome() {
     try {
         await initDB();
         if (window.ui && window.ui.applyGlobalConfig) {
-            window.ui.applyGlobalConfig();
+            await window.ui.applyGlobalConfig();
         }
     } catch(e) { 
         console.warn("initDB falló, continuando con fallback...");
@@ -94,6 +94,9 @@ function renderHomeSections(allProducts, ropaCont, perfCont) {
             perfCont.appendChild(card);
         }
     });
+
+    if (ropa.length === 0) ropaCont.innerHTML = '<p style="grid-column: 1/-1; text-align:center; padding: 40px; color: #888;">Estamos preparando las mejores prendas para ti. ¡Vuelve pronto!</p>';
+    if (perfumes.length === 0) perfCont.innerHTML = '<p style="grid-column: 1/-1; text-align:center; padding: 40px; color: #888;">Nuestras fragancias árabes exclusivas están en camino.</p>';
 
     if (window.ui && window.ui.initAnimations) window.ui.initAnimations();
 }

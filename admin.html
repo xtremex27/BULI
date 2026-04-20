@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | BULIS</title>
+    <title>Admin Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Teko:wght@600&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -92,7 +92,7 @@
 <body>
     <div class="sidebar">
         <div class="sidebar-header">
-            <div class="logo">BULIS ADMIN</div>
+            <div class="logo"><span class="store-name"></span> ADMIN</div>
         </div>
         <div class="nav-items">
             <div class="nav-item active" onclick="switchTab('products')">Productos</div>
@@ -171,8 +171,24 @@
                     <input type="text" id="cfg-whatsapp">
                 </div>
                 <div class="form-group">
-                    <label>URL del Logo</label>
-                    <input type="text" id="cfg-logo">
+                    <label>Correo Electrónico</label>
+                    <input type="email" id="cfg-email" placeholder="ventas@bulis.pe">
+                </div>
+                <div class="form-group">
+                    <label>Link de Instagram</label>
+                    <input type="text" id="cfg-ig" placeholder="https://instagram.com/bulis">
+                </div>
+                <div class="form-group full" style="grid-column: 1 / -1;">
+                    <label style="text-align: center;">Logotipo de la Tienda</label>
+                    <div class="image-upload-wrapper">
+                        <div class="preview-container" onclick="document.getElementById('cfg-file').click()">
+                            <div class="preview-placeholder" id="cfg-logo-placeholder">📷</div>
+                            <img id="cfg-logo-preview" style="display: none;">
+                        </div>
+                        <label for="cfg-file" class="upload-label">Toca para cambiar logo</label>
+                        <input type="file" id="cfg-file" accept="image/*">
+                        <input type="hidden" id="cfg-logo">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Subtítulo del Banner (Hero)</label>
@@ -356,6 +372,7 @@
             // Setup previews
             setupPreview('p-file', 'p-preview', 'p-placeholder');
             setupPreview('cat-file', 'cat-preview', 'cat-placeholder');
+            setupPreview('cfg-file', 'cfg-logo-preview', 'cfg-logo-placeholder');
         }
 
         async function loadProducts() {
@@ -586,10 +603,19 @@
             const color = await window.dbActions.getConfig('primary_color') || '#000000';
             const bSub = await window.dbActions.getConfig('banner_subtitle') || '';
             const bTitle = await window.dbActions.getConfig('banner_title') || '';
+            const email = await window.dbActions.getConfig('store_email') || '';
+            const ig = await window.dbActions.getConfig('store_ig') || '';
 
             document.getElementById('cfg-whatsapp').value = wa;
             document.getElementById('cfg-name').value = name;
+            document.getElementById('cfg-email').value = email;
+            document.getElementById('cfg-ig').value = ig;
             document.getElementById('cfg-logo').value = logo;
+            if (logo) {
+                document.getElementById('cfg-logo-preview').src = logo;
+                document.getElementById('cfg-logo-preview').style.display = 'block';
+                document.getElementById('cfg-logo-placeholder').style.display = 'none';
+            }
             document.getElementById('cfg-address').value = addr;
             document.getElementById('cfg-maps').value = maps;
             document.getElementById('cfg-marquee').value = marq;
@@ -601,6 +627,10 @@
             document.getElementById('cfg-color-picker').oninput = (e) => {
                 document.getElementById('cfg-color').value = e.target.value;
             };
+
+            // Branding Dinámico en Admin
+            document.title = `Admin | ${name}`;
+            document.querySelectorAll('.store-name').forEach(el => el.innerText = name);
         }
 
         async function saveAllConfigs() {
@@ -609,15 +639,24 @@
             btn.innerText = 'GUARDANDO...';
             btn.disabled = true;
 
+            let logoUrl = document.getElementById('cfg-logo').value;
+            const logoFile = document.getElementById('cfg-file').files[0];
+            if (logoFile) {
+                const uploaded = await uploadImage(logoFile, btn);
+                if (uploaded) logoUrl = uploaded;
+            }
+
             await window.dbActions.updateConfig('whatsapp', document.getElementById('cfg-whatsapp').value);
             await window.dbActions.updateConfig('store_name', document.getElementById('cfg-name').value);
-            await window.dbActions.updateConfig('store_logo', document.getElementById('cfg-logo').value);
+            await window.dbActions.updateConfig('store_logo', logoUrl);
             await window.dbActions.updateConfig('store_address', document.getElementById('cfg-address').value);
             await window.dbActions.updateConfig('store_maps_link', document.getElementById('cfg-maps').value);
             await window.dbActions.updateConfig('marquee_items', document.getElementById('cfg-marquee').value);
             await window.dbActions.updateConfig('primary_color', document.getElementById('cfg-color').value);
             await window.dbActions.updateConfig('banner_subtitle', document.getElementById('cfg-banner-sub').value);
             await window.dbActions.updateConfig('banner_title', document.getElementById('cfg-banner-title').value);
+            await window.dbActions.updateConfig('store_email', document.getElementById('cfg-email').value);
+            await window.dbActions.updateConfig('store_ig', document.getElementById('cfg-ig').value);
             
             btn.innerText = oldText;
             btn.disabled = false;

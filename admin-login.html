@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login | BULIS</title>
+    <title>Admin Login</title>
     <link href="https://fonts.googleapis.com/css2?family=Teko:wght@600&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root { --main: #000; --accent: #3498db; }
@@ -21,7 +21,7 @@
 </head>
 <body>
     <div class="login-card">
-        <h1>ADMIN PORTAL</h1>
+        <h1><span class="store-name"></span> ADMIN</h1>
         <div class="form-group">
             <label>Usuario</label>
             <input type="text" id="user" placeholder="admin">
@@ -74,6 +74,17 @@
                 loginBtn.disabled = false;
             }
         }
+        // Cargar nombre dinámico si existe
+        async function loadBrand() {
+            if (window.dbActions && window.dbActions.getConfig) {
+                const name = await window.dbActions.getConfig('store_name');
+                if (name) {
+                    document.title = `Admin Login | ${name}`;
+                    document.querySelectorAll('.store-name').forEach(el => el.innerText = name);
+                }
+            }
+        }
+        loadBrand();
     </script>
 </body>
 </html>

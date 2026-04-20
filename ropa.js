@@ -77,6 +77,9 @@ function renderRopaProducts(products, cont) {
             cont.appendChild(card);
         }
     });
+    if (products.length === 0) {
+        cont.innerHTML = '<p style="grid-column: 1/-1; text-align:center; padding: 60px 20px; color: #888; font-size: 1.1rem;">Nuestra nueva colección de Ropa está en camino. ¡Muy pronto disponible!</p>';
+    }
     if (window.ui && window.ui.initAnimations) window.ui.initAnimations();
 }
 

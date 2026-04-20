@@ -270,15 +270,16 @@ async function applyGlobalConfig() {
     const address = await window.dbActions.getConfig('store_address') || window.dbDefaults.config['store_address'];
     const mapsLink = await window.dbActions.getConfig('store_maps_link') || window.dbDefaults.config['store_maps_link'];
     const primaryColor = await window.dbActions.getConfig('primary_color') || window.dbDefaults.config['primary_color'];
-    const bannerTitle = await window.dbActions.getConfig('banner_title') || window.dbDefaults.config['banner_title'];
-    const bannerSub = await window.dbActions.getConfig('banner_subtitle') || window.dbDefaults.config['banner_subtitle'];
+    const bannerTitle = String(await window.dbActions.getConfig('banner_title') || window.dbDefaults.config['banner_title']);
+    const bannerSub = String(await window.dbActions.getConfig('banner_subtitle') || window.dbDefaults.config['banner_subtitle']);
 
-    // Theme (Inject CSS Variable)
-    document.documentElement.style.setProperty('--text-main', primaryColor);
+    try {
+        // Theme (Inject CSS Variable)
+        document.documentElement.style.setProperty('--text-main', primaryColor);
 
     // Title & Brand
     document.title = `${name} | Tienda Oficial`;
-    document.querySelectorAll('.store-name-text').forEach(el => el.innerText = name);
+    document.querySelectorAll('.store-name').forEach(el => el.innerText = name);
     if (document.getElementById('main-logo')) document.getElementById('main-logo').src = logo;
 
     // Home Banner Hero
@@ -298,6 +299,14 @@ async function applyGlobalConfig() {
     const mobileNavCont = document.getElementById('mobile-dynamic-nav');
     
     let cats = await window.dbActions.getCategories();
+
+    // Fallback: Si no hay categorías en la DB, usar las básicas para que no se vea vacío
+    if (!cats || cats.length === 0) {
+        cats = [
+            { id: 1, name: 'ROPA', link: 'ropa.html', subtitle: 'MORCOTH x Andrew\'s', description: 'Essentials de alta calidad.' },
+            { id: 2, name: 'PERFUMERÍA', link: 'perfumes.html', subtitle: 'BULIS IMPORT', description: 'Fragancias árabes exclusivas.' }
+        ];
+    }
 
     if (navCont || mobileNavCont) {
         let navHtml = `<a href="index.html">INICIO</a>`;
@@ -319,6 +328,17 @@ async function applyGlobalConfig() {
             const bgHtml = c.image ? `<div class="category-bg" style="background-image: url('${c.image}');"></div>` : '';
             card.innerHTML = `${bgHtml}<h4>${c.name}</h4>`;
             gridCont.appendChild(card);
+
+            // --- NUEVO: Sincronizar Secciones de Productos en el Inicio ---
+            // Buscamos secciones que coincidan con el link (ej: ropa.html -> id="ropa")
+            const sectionId = c.link.replace('.html', '').replace('#', '');
+            const section = document.getElementById(sectionId);
+            if (section) {
+                const h2 = section.querySelector('.section-heading h2');
+                const p = section.querySelector('.section-heading p');
+                if (h2) h2.innerText = `CATÁLOGO ${c.name.toUpperCase()} ${c.subtitle ? '(' + c.subtitle.toUpperCase() + ')' : ''}`;
+                if (p) p.innerText = c.description || '';
+            }
         });
     }
 
@@ -333,7 +353,7 @@ async function applyGlobalConfig() {
         const bDesc = document.querySelector('.page-banner .banner-desc');
         
         if (bSub) bSub.innerText = currCat.subtitle || '';
-        if (bTitle) bTitle.innerText = `CATÁLOGO ${currCat.name.toUpperCase()}`;
+        if (bTitle) bTitle.innerText = currCat.name;
         if (bDesc) bDesc.innerText = currCat.description || '';
 
         // Actualizar Filtros de Sub-categoría
@@ -349,6 +369,53 @@ async function applyGlobalConfig() {
                 // Re-bind events (ropa.js / perfumes.js handle the actual click logic if called after)
             }
         }
+    }
+
+    // --- DINAMISMO DEL FOOTER (Sincronización Total) ---
+    const wa = await window.dbActions.getConfig('whatsapp') || window.dbDefaults.config['whatsapp'];
+    const address = await window.dbActions.getConfig('store_address') || window.dbDefaults.config['store_address'];
+    const mapsLink = String(await window.dbActions.getConfig('store_maps_link') || window.dbDefaults.config['store_maps_link']);
+    const email = String(await window.dbActions.getConfig('store_email') || '');
+    const ig = String(await window.dbActions.getConfig('store_ig') || '');
+    const waLink = `https://wa.me/${String(wa).replace(/\s+/g, '')}`;
+
+    document.querySelectorAll('#footer-wa').forEach(el => {
+        el.innerText = `+${wa} (WhatsApp)`;
+        el.href = waLink;
+    });
+    document.querySelectorAll('#footer-email').forEach(el => {
+        el.innerText = email || 'ventas@tuempresa.pe';
+        el.href = email ? `mailto:${email}` : '#';
+    });
+    document.querySelectorAll('#footer-address').forEach(el => el.innerText = address);
+    document.querySelectorAll('#footer-maps-link').forEach(el => el.href = mapsLink);
+    
+    // Socials Footer
+    const socialCont = document.getElementById('footer-socials');
+    if (socialCont && ig) {
+        socialCont.innerHTML = `<a href="${ig}" target="_blank">Instagram</a>`;
+    }
+
+    // Footer Categories
+    document.querySelectorAll('#footer-cats').forEach(el => {
+        const title = el.querySelector('h3');
+        el.innerHTML = '';
+        if (title) el.appendChild(title);
+        cats.forEach(c => {
+            const link = document.createElement('a');
+            link.href = c.link;
+            link.innerText = c.name;
+            el.appendChild(link);
+        });
+        // Agregar link al admin para fácil acceso
+        const adminLink = document.createElement('a');
+        adminLink.href = 'admin-login.html';
+        adminLink.style = "color: #666; font-size: 0.75rem; margin-top: 20px; display: block;";
+        adminLink.innerText = 'Panel Admin';
+        el.appendChild(adminLink);
+    });
+    } catch (err) {
+        console.error("Error en applyGlobalConfig:", err);
     }
 }
 

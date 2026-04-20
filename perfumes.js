@@ -77,6 +77,9 @@ function renderPerfumeProducts(products, cont) {
             cont.appendChild(card);
         }
     });
+    if (products.length === 0) {
+        cont.innerHTML = '<p style="grid-column: 1/-1; text-align:center; padding: 60px 20px; color: #888; font-size: 1.1rem;">Estamos seleccionando las fragancias árabes más exclusivas para ti. ¡Vuelve pronto!</p>';
+    }
     if (window.ui && window.ui.initAnimations) window.ui.initAnimations();
 }
 
