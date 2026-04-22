@@ -382,16 +382,23 @@ async function applyGlobalConfig() {
     const mapsLink = String(await window.dbActions.getConfig('store_maps_link') || window.dbDefaults.config['store_maps_link']);
     const email = String(await window.dbActions.getConfig('store_email') || '');
     const ig = String(await window.dbActions.getConfig('store_ig') || '');
-    const waLink = `https://wa.me/${String(wa).replace(/\s+/g, '')}`;
+    // --- DINAMISMO DEL WHATSAPP (Sincronización Total) ---
+    const waClean = String(wa).replace(/\s+/g, '');
+    const waLink = `https://wa.me/${waClean}`;
+    const waText = `+${wa} (WhatsApp)`;
 
-    document.querySelectorAll('#footer-wa').forEach(el => {
-        el.innerText = `+${wa} (WhatsApp)`;
+    document.querySelectorAll('.wa-dynamic').forEach(el => {
         el.href = waLink;
+        if (el.innerText.includes('WhatsApp') || el.innerText.includes('51') || el.innerText.includes('000')) {
+            el.innerText = waText;
+        }
     });
+
     document.querySelectorAll('#footer-email').forEach(el => {
         el.innerText = email || 'ventas@tuempresa.pe';
         el.href = email ? `mailto:${email}` : '#';
     });
+    
     document.querySelectorAll('#footer-address').forEach(el => el.innerText = address);
     document.querySelectorAll('#footer-maps-link').forEach(el => el.href = mapsLink);
     

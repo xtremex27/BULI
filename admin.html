@@ -175,7 +175,6 @@
                             <th>ID</th>
                             <th>Imagen</th>
                             <th>Nombre</th>
-                            <th>Enlace</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -333,12 +332,8 @@
                         <input type="text" id="cat-subtitle" placeholder="Ej: Recién llegado">
                     </div>
                     <div class="form-group full">
-                        <label>Descripción del Banner</label>
-                        <textarea id="cat-desc" rows="2" placeholder="Ej: Prendas en tendencia a precios mayoristas..."></textarea>
-                    </div>
-                    <div class="form-group full">
-                        <label>Enlace de Destino</label>
-                        <input type="text" id="cat-link" placeholder="ropa.html o #id" required>
+                        <label>Descripción (Opcional)</label>
+                        <textarea id="cat-desc" rows="3" placeholder="Breve texto sobre esta categoría..."></textarea>
                     </div>
                     <div class="form-group full">
                         <label style="text-align: center;">Imagen de la Categoría</label>
@@ -478,7 +473,6 @@
                     <td>#${c.id}</td>
                     <td><img src="${c.image || 'https://via.placeholder.com/50/eee/000'}" class="product-img-small"></td>
                     <td><b>${c.name}</b></td>
-                    <td><code>categoria.html?id=${c.id}</code></td>
                     <td>
                         <div class="actions" style="gap:5px;">
                             <button class="btn-action" title="Editar" onclick="openCatModal(${JSON.stringify(c).replace(/"/g, '&quot;')})">
@@ -544,7 +538,6 @@
                 document.getElementById('cat-name').value = cat.name;
                 document.getElementById('cat-subtitle').value = cat.subtitle || '';
                 document.getElementById('cat-desc').value = cat.description || '';
-                document.getElementById('cat-link').value = cat.link;
                 document.getElementById('cat-img').value = cat.image || '';
                 
                 if (cat.image) {
@@ -641,7 +634,6 @@
                 name: document.getElementById('cat-name').value,
                 subtitle: document.getElementById('cat-subtitle').value,
                 description: document.getElementById('cat-desc').value,
-                link: document.getElementById('cat-link').value,
                 image: imgUrl
             };
             
