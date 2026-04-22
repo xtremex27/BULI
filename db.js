@@ -1,13 +1,25 @@
 // db.js - Motor de Datos con Supabase & Cloudinary
-const SUPABASE_URL = 'https://vhstrvjmgccqakfyxdra.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZoc3RydmptZ2NjcWFrZnl4ZHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTcxOTEsImV4cCI6MjA5MjI3MzE5MX0.-vUD8roup5dOPTPpAugISYJo4Qdhm_GAxjshuH9NNGw';
+
+// Sistema de Configuración Seguro (Cargado desde config.js)
+const CONFIG = window.CONFIG || {
+    SUPABASE_URL: '',
+    SUPABASE_KEY: '',
+    CLOUDINARY_NAME: '',
+    CLOUDINARY_KEY: '',
+    CLOUDINARY_SECRET: ''
+};
+
+const SUPABASE_URL = CONFIG.SUPABASE_URL;
+const SUPABASE_KEY = CONFIG.SUPABASE_KEY;
 
 // Configuración de Cloudinary (Para subida)
-const CLOUDINARY_NAME = 'dxwkdkqln';
-const CLOUDINARY_KEY = '953613331493623';
-const CLOUDINARY_SECRET = 'uQXd18xwlFPzhD5-RCsYPu5nbJs'; 
+const CLOUDINARY_NAME = CONFIG.CLOUDINARY_NAME;
+const CLOUDINARY_KEY = CONFIG.CLOUDINARY_KEY;
+const CLOUDINARY_SECRET = CONFIG.CLOUDINARY_SECRET; 
 
-const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+const supabaseClient = (window.supabase && SUPABASE_URL && SUPABASE_KEY) 
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) 
+    : null;
 
 // Initial Fallbacks (Solo para referencia o si algo falla)
 const initialConfig = {
