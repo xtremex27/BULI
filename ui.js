@@ -263,173 +263,185 @@ function initAnimations() {
 
 // CMS: Dynamic Injection
 async function applyGlobalConfig() {
-    // Helpers para obtener dato de DB o Default
-    const name = await window.dbActions.getConfig('store_name') || window.dbDefaults.config['store_name'];
-    const logo = await window.dbActions.getConfig('store_logo') || window.dbDefaults.config['store_logo'];
-    const marqueeData = await window.dbActions.getConfig('marquee_items') || window.dbDefaults.config['marquee_items'];
-    const address = await window.dbActions.getConfig('store_address') || window.dbDefaults.config['store_address'];
-    const mapsLink = await window.dbActions.getConfig('store_maps_link') || window.dbDefaults.config['store_maps_link'];
-    const primaryColor = await window.dbActions.getConfig('primary_color') || window.dbDefaults.config['primary_color'];
-    const bannerTitle = String(await window.dbActions.getConfig('banner_title') || window.dbDefaults.config['banner_title']);
-    const bannerSub = String(await window.dbActions.getConfig('banner_subtitle') || window.dbDefaults.config['banner_subtitle']);
-
     try {
+        // Disparar todas las peticiones en paralelo para máxima velocidad
+        const configKeys = [
+            'store_name', 'store_logo', 'marquee_items', 'store_address', 
+            'store_maps_link', 'primary_color', 'banner_title', 'banner_subtitle',
+            'store_email', 'store_ig', 'whatsapp'
+        ];
+
+        const results = await Promise.all(configKeys.map(key => window.dbActions.getConfig(key)));
+        
+        // Mapear resultados a variables con sus respectivos fallbacks
+        const [
+            name, logo, marqueeData, address, mapsLink, primaryColor, 
+            bannerTitle, bannerSub, email, ig, wa
+        ] = results.map((val, i) => val || window.dbDefaults.config[configKeys[i]] || '');
+
         // Theme (Inject CSS Variable)
         document.documentElement.style.setProperty('--text-main', primaryColor);
 
-    // Title & Brand
-    document.title = `${name} | Tienda Oficial`;
-    document.querySelectorAll('.store-name').forEach(el => el.innerText = name);
-    if (document.getElementById('main-logo')) document.getElementById('main-logo').src = logo;
+        // Title & Brand
+        document.title = `${name} | Tienda Oficial`;
+        document.querySelectorAll('.store-name').forEach(el => el.innerText = name);
+        if (document.getElementById('main-logo')) document.getElementById('main-logo').src = logo;
+        if (document.getElementById('loader-logo-img')) document.getElementById('loader-logo-img').src = logo;
 
-    // Home Banner Hero
-    if (document.getElementById('hero-title')) document.getElementById('hero-title').innerText = bannerTitle;
-    if (document.getElementById('hero-subtitle')) document.getElementById('hero-subtitle').innerText = bannerSub;
+        // Home Banner Hero
+        if (document.getElementById('hero-title')) document.getElementById('hero-title').innerText = bannerTitle;
+        if (document.getElementById('hero-subtitle')) document.getElementById('hero-subtitle').innerText = bannerSub;
 
-    // Marquee
-    const marqueeCont = document.getElementById('main-marquee');
-    if (marqueeCont && marqueeData) {
-        const items = marqueeData.split(';').map(i => i.trim()).filter(i => i !== '');
-        const fullContent = [...items, ...items].map(text => `<span>${text}</span>`).join('');
-        marqueeCont.innerHTML = fullContent;
-    }
+        // Marquee
+        const marqueeCont = document.getElementById('main-marquee');
+        if (marqueeCont && marqueeData) {
+            const items = marqueeData.split(';').map(i => i.trim()).filter(i => i !== '');
+            const fullContent = [...items, ...items].map(text => `<span>${text}</span>`).join('');
+            marqueeCont.innerHTML = fullContent;
+        }
 
-    // Dynamic Navigation
-    const navCont = document.getElementById('dynamic-nav');
-    const mobileNavCont = document.getElementById('mobile-dynamic-nav');
-    
-    let cats = await window.dbActions.getCategories();
+        // Dynamic Navigation & Footer Categories
+        let cats = await window.dbActions.getCategories();
+        if (!cats || cats.length === 0) {
+            cats = [
+                { id: 1, name: 'ROPA', link: 'ropa.html', subtitle: 'MORCOTH x Andrew\'s', description: 'Essentials de alta calidad.' },
+                { id: 2, name: 'PERFUMERÍA', link: 'perfumes.html', subtitle: 'BULIS IMPORT', description: 'Fragancias árabes exclusivas.' }
+            ];
+        }
 
-    // Fallback: Si no hay categorías en la DB, usar las básicas para que no se vea vacío
-    if (!cats || cats.length === 0) {
-        cats = [
-            { id: 1, name: 'ROPA', link: 'ropa.html', subtitle: 'MORCOTH x Andrew\'s', description: 'Essentials de alta calidad.' },
-            { id: 2, name: 'PERFUMERÍA', link: 'perfumes.html', subtitle: 'BULIS IMPORT', description: 'Fragancias árabes exclusivas.' }
-        ];
-    }
+        // Render Nav
+        const navCont = document.getElementById('dynamic-nav');
+        const mobileNavCont = document.getElementById('mobile-dynamic-nav');
+        if (navCont || mobileNavCont) {
+            const params = new URLSearchParams(window.location.search);
+            const currentId = params.get('id');
+            const currPath = window.location.pathname.split('/').pop();
 
-    if (navCont || mobileNavCont) {
-        const params = new URLSearchParams(window.location.search);
-        const currentId = params.get('id');
-        const currPath = window.location.pathname.split('/').pop();
+            // 1. Siempre empezar con INICIO
+            let navHtml = `<a href="index.html" class="${currPath === 'index.html' || !currPath ? 'active' : ''}">INICIO</a>`;
+            
+            // 2. Si hay categorías cargadas, usarlas; si no, usar las fijas por defecto para que no se vea vacío
+            if (cats && cats.length > 0) {
+                cats.forEach(c => {
+                    const dynamicLink = `categoria.html?id=${c.id}`;
+                    const isActive = currentId == c.id ? 'active' : '';
+                    navHtml += `<a href="${dynamicLink}" class="${isActive}">${c.name}</a>`;
+                });
+            } else {
+                navHtml += `<a href="ropa.html" class="${currPath === 'ropa.html' ? 'active' : ''}">ROPA</a>`;
+                navHtml += `<a href="perfumes.html" class="${currPath === 'perfumes.html' ? 'active' : ''}">PERFUMERÍA</a>`;
+            }
 
-        let navHtml = `<a href="index.html" class="${currPath === 'index.html' || !currPath ? 'active' : ''}">INICIO</a>`;
+            if (navCont) navCont.innerHTML = navHtml;
+            if (mobileNavCont) mobileNavCont.innerHTML = navHtml;
+        }
+
+        // Render Home Grid & Footer
+        const gridCont = document.getElementById('category-grid');
+        if (gridCont) {
+            gridCont.innerHTML = '';
+            cats.forEach(c => {
+                const dynamicLink = `categoria.html?id=${c.id}`;
+                const card = document.createElement('a');
+                card.href = dynamicLink;
+                card.className = 'category-card';
+                const bgHtml = c.image ? `<div class="category-bg" style="background-image: url('${c.image}');"></div>` : '';
+                card.innerHTML = `${bgHtml}<h4>${c.name}</h4>`;
+                gridCont.appendChild(card);
+            });
+        }
+
+        // --- Sincronizar Secciones de Productos en el Inicio ---
         cats.forEach(c => {
-            const dynamicLink = `categoria.html?id=${c.id}`;
-            const isActive = currentId == c.id ? 'active' : '';
-            navHtml += `<a href="${dynamicLink}" class="${isActive}">${c.name}</a>`;
-        });
-        if (navCont) navCont.innerHTML = navHtml;
-        if (mobileNavCont) mobileNavCont.innerHTML = navHtml;
-    }
-
-    // Home Category Grid
-    const gridCont = document.getElementById('category-grid');
-    if (gridCont) {
-        gridCont.innerHTML = '';
-        cats.forEach(c => {
-            const dynamicLink = `categoria.html?id=${c.id}`;
-            const card = document.createElement('a');
-            card.href = dynamicLink;
-            card.className = 'category-card';
-            const bgHtml = c.image ? `<div class="category-bg" style="background-image: url('${c.image}');"></div>` : '';
-            card.innerHTML = `${bgHtml}<h4>${c.name}</h4>`;
-            gridCont.appendChild(card);
-
-            // --- Sincronizar Secciones de Productos en el Inicio ---
-            const section = document.getElementById(c.name.toLowerCase());
-            if (section) {
-                const h2 = section.querySelector('.section-heading h2');
-                const p = section.querySelector('.section-heading p');
-                if (h2) h2.innerText = `CATÁLOGO ${c.name.toUpperCase()} ${c.subtitle ? '(' + c.subtitle.toUpperCase() + ')' : ''}`;
+            const sectionId = c.name.toLowerCase().includes('ropa') ? 'ropa' : (c.name.toLowerCase().includes('perfume') ? 'perfumes' : null);
+            if (sectionId) {
+                const h2 = document.getElementById(`${sectionId}-title`);
+                const p = document.getElementById(`${sectionId}-desc`);
+                if (h2) h2.innerText = `CATÁLOGO ${c.name.toUpperCase()}`;
                 if (p) p.innerText = c.description || '';
             }
         });
-    }
 
-    // --- DINAMISMO DE PÁGINA DE CATEGORÍA ---
-    const currPath = window.location.pathname.split('/').pop() || 'index.html';
-    const currCat = cats.find(c => c.link === currPath);
-    
-    if (currCat) {
-        // Actualizar Banner de la página (Ropa, Perfumes, etc)
-        const bSub = document.querySelector('.page-banner .banner-subtitle');
-        const bTitle = document.querySelector('.page-banner .banner-title');
-        const bDesc = document.querySelector('.page-banner .banner-desc');
-        
-        if (bSub) bSub.innerText = currCat.subtitle || '';
-        if (bTitle) bTitle.innerText = currCat.name;
-        if (bDesc) bDesc.innerText = currCat.description || '';
+        // --- DINAMISMO DEL WHATSAPP (Sincronización Total) ---
+        const waClean = String(wa).replace(/\s+/g, '');
+        const waLink = `https://wa.me/${waClean}`;
+        const waText = `+${wa} (WhatsApp)`;
 
-        // Actualizar Filtros de Sub-categoría
-        const filterBar = document.querySelector('.sub-filter-bar');
-        if (filterBar) {
-            const subs = await window.dbActions.getSubCategories(currCat.id);
-            if (subs.length > 0) {
-                let filterHtml = `<button class="sub-filter active" data-sub="all">TODO</button>`;
-                subs.forEach(s => {
-                    filterHtml += `<button class="sub-filter" data-sub="${s.name.toLowerCase()}">${s.name.toUpperCase()}</button>`;
-                });
-                filterBar.innerHTML = filterHtml;
-                // Re-bind events (ropa.js / perfumes.js handle the actual click logic if called after)
+        document.querySelectorAll('.wa-dynamic').forEach(el => {
+            el.href = waLink;
+            if (el.innerText.includes('WhatsApp') || el.innerText.includes('51') || el.innerText.includes('000')) {
+                el.innerText = waText;
             }
-        }
-    }
-
-    // --- DINAMISMO DEL FOOTER (Sincronización Total) ---
-    const wa = await window.dbActions.getConfig('whatsapp') || window.dbDefaults.config['whatsapp'];
-    const address = await window.dbActions.getConfig('store_address') || window.dbDefaults.config['store_address'];
-    const mapsLink = String(await window.dbActions.getConfig('store_maps_link') || window.dbDefaults.config['store_maps_link']);
-    const email = String(await window.dbActions.getConfig('store_email') || '');
-    const ig = String(await window.dbActions.getConfig('store_ig') || '');
-    // --- DINAMISMO DEL WHATSAPP (Sincronización Total) ---
-    const waClean = String(wa).replace(/\s+/g, '');
-    const waLink = `https://wa.me/${waClean}`;
-    const waText = `+${wa} (WhatsApp)`;
-
-    document.querySelectorAll('.wa-dynamic').forEach(el => {
-        el.href = waLink;
-        if (el.innerText.includes('WhatsApp') || el.innerText.includes('51') || el.innerText.includes('000')) {
-            el.innerText = waText;
-        }
-    });
-
-    document.querySelectorAll('#footer-email').forEach(el => {
-        el.innerText = email || 'ventas@tuempresa.pe';
-        el.href = email ? `mailto:${email}` : '#';
-    });
-    
-    document.querySelectorAll('#footer-address').forEach(el => el.innerText = address);
-    document.querySelectorAll('#footer-maps-link').forEach(el => el.href = mapsLink);
-    
-    // Socials Footer
-    const socialCont = document.getElementById('footer-socials');
-    if (socialCont && ig) {
-        socialCont.innerHTML = `<a href="${ig}" target="_blank">Instagram</a>`;
-    }
-
-    // Footer Categories
-    document.querySelectorAll('#footer-cats').forEach(el => {
-        const title = el.querySelector('h3');
-        el.innerHTML = '';
-        if (title) el.appendChild(title);
-        cats.forEach(c => {
-            const link = document.createElement('a');
-            link.href = `categoria.html?id=${c.id}`;
-            link.innerText = c.name;
-            el.appendChild(link);
         });
-        // Agregar link al admin para fácil acceso
-        const adminLink = document.createElement('a');
-        adminLink.href = 'admin-login.html';
-        adminLink.style = "color: #666; font-size: 0.75rem; margin-top: 20px; display: block;";
-        adminLink.innerText = 'Panel Admin';
-        el.appendChild(adminLink);
-    });
+
+        document.querySelectorAll('#footer-email').forEach(el => {
+            el.innerText = email || 'ventas@tuempresa.pe';
+            el.href = email ? `mailto:${email}` : '#';
+        });
+        
+        document.querySelectorAll('#footer-address').forEach(el => el.innerText = address);
+        document.querySelectorAll('#footer-maps-link').forEach(el => el.href = mapsLink);
+
+        // --- Sincronizar Sección Main "Encuéntranos" ---
+        const mainAddr = document.getElementById('main-address');
+        const mainMapLink = document.getElementById('main-maps-link');
+        const mainMapIframe = document.getElementById('main-maps-iframe');
+
+        if (mainAddr) mainAddr.innerText = address;
+        if (mainMapLink) mainMapLink.href = mapsLink;
+        if (mainMapIframe && mapsLink.includes('embed')) {
+            mainMapIframe.src = mapsLink;
+        }
+        
+        // Socials Footer
+        const socialCont = document.getElementById('footer-socials');
+        if (socialCont && ig) {
+            socialCont.innerHTML = `<a href="${ig}" target="_blank">Instagram</a>`;
+        }
+
+        // Footer Categories
+        document.querySelectorAll('#footer-cats').forEach(el => {
+            const title = el.querySelector('h3');
+            el.innerHTML = '';
+            if (title) el.appendChild(title);
+            cats.forEach(c => {
+                const link = document.createElement('a');
+                link.href = `categoria.html?id=${c.id}`;
+                link.innerText = c.name;
+                el.appendChild(link);
+            });
+        });
+
     } catch (err) {
         console.error("Error en applyGlobalConfig:", err);
+    } finally {
+        // Asegurar que el loader se cierre siempre, pase lo que pase
+        hideLoader();
     }
 }
+
+function hideLoader() {
+    const loader = document.getElementById('page-loader');
+    if (loader) {
+        // Timeout de seguridad extra por si acaso
+        setTimeout(() => {
+            loader.classList.add('hidden');
+            setTimeout(() => {
+                loader.style.display = 'none';
+                document.body.classList.remove('loading');
+            }, 500);
+        }, 100);
+    }
+}
+
+// Respaldo absoluto: Si a los 5 segundos sigue cargando, forzar cierre
+setTimeout(() => {
+    const loader = document.getElementById('page-loader');
+    if (loader && !loader.classList.contains('hidden')) {
+        console.warn("Loader forzado por tiempo de espera agotado.");
+        hideLoader();
+    }
+}, 5000);
 
 
 window.ui = {

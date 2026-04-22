@@ -18,10 +18,10 @@ async function startHome() {
 
 
 async function renderWithRetry(attempts) {
-    const ropaCont = document.getElementById('ropa-container');
-    const perfCont = document.getElementById('perfumes-container');
+    const ropaTrack = document.getElementById('ropa-track-1');
+    const perfTrack = document.getElementById('perf-track-1');
     
-    if (!ropaCont || !perfCont) {
+    if (!ropaTrack || !perfTrack) {
         if (attempts < 10) setTimeout(() => renderWithRetry(attempts + 1), 200);
         return;
     }
@@ -30,10 +30,13 @@ async function renderWithRetry(attempts) {
     
     if (allProducts && allProducts.length > 0) {
         ui.updateProducts(allProducts);
-        renderHomeSections(allProducts, ropaCont, perfCont);
+        renderHomeSections(allProducts);
     } else if (attempts < 20) {
         setTimeout(() => renderWithRetry(attempts + 1), 500);
     }
+    
+    // Ocultar loader al terminar
+    if (window.ui && window.ui.hideLoader) window.ui.hideLoader();
 }
 
 function generateProductHtml(product) {
@@ -66,37 +69,55 @@ function generateProductHtml(product) {
     }
 }
 
-function renderHomeSections(allProducts, ropaCont, perfCont) {
-    ropaCont.innerHTML = '';
-    perfCont.innerHTML = '';
+function renderHomeSections(allProducts) {
+    const r1 = document.getElementById('ropa-track-1');
+    const r2 = document.getElementById('ropa-track-2');
+    const p1 = document.getElementById('perf-track-1');
+    const p2 = document.getElementById('perf-track-2');
 
-    const ropa = allProducts.filter(p => p.category === 'ropa').slice(0, 12);
-    const perfumes = allProducts.filter(p => p.category === 'perfumes').slice(0, 12);
+    if (!r1 || !r2 || !p1 || !p2) return;
 
-    ropa.forEach((p, i) => {
-        const html = generateProductHtml(p);
-        if (html) {
-            const div = document.createElement('div');
-            div.innerHTML = html;
-            const card = div.firstElementChild;
-            card.style.transitionDelay = `${(i % 4) * 0.1}s`;
-            ropaCont.appendChild(card);
-        }
-    });
+    r1.innerHTML = ''; r2.innerHTML = '';
+    p1.innerHTML = ''; p2.innerHTML = '';
 
-    perfumes.forEach((p, i) => {
-        const html = generateProductHtml(p);
-        if (html) {
-            const div = document.createElement('div');
-            div.innerHTML = html;
-            const card = div.firstElementChild;
-            card.style.transitionDelay = `${(i % 4) * 0.1}s`;
-            perfCont.appendChild(card);
-        }
-    });
+    // Filtrar y tomar suficientes productos para el carrusel (mínimo 12 para que se vea lleno)
+    const ropa = allProducts.filter(p => {
+        const cat = (p.category || '').toLowerCase();
+        return cat === 'ropa' || cat === 'ropa urban' || cat.startsWith('ropa') || cat.includes('urban');
+    }).slice(0, 12);
 
-    if (ropa.length === 0) ropaCont.innerHTML = '<p style="grid-column: 1/-1; text-align:center; padding: 40px; color: #888;">Estamos preparando las mejores prendas para ti. ¡Vuelve pronto!</p>';
-    if (perfumes.length === 0) perfCont.innerHTML = '<p style="grid-column: 1/-1; text-align:center; padding: 40px; color: #888;">Nuestras fragancias árabes exclusivas están en camino.</p>';
+    const perfumes = allProducts.filter(p => {
+        const cat = (p.category || '').toLowerCase();
+        return cat === 'perfumes' || cat === 'perfumería' || cat.startsWith('perfume');
+    }).slice(0, 12);
+
+    // Función auxiliar para llenar tracks con duplicación para efecto infinito
+    const fillTrack = (products, track1, track2) => {
+        if (products.length === 0) return;
+        
+        // Dividir en dos filas
+        const mid = Math.ceil(products.length / 2);
+        const row1 = products.slice(0, mid);
+        const row2 = products.slice(mid);
+
+        // Llenar Fila 1 y clonar
+        row1.forEach(p => track1.innerHTML += generateProductHtml(p));
+        track1.innerHTML += track1.innerHTML; // Clon para loop
+
+        // Llenar Fila 2 y clonar
+        row2.forEach(p => track2.innerHTML += generateProductHtml(p));
+        track2.innerHTML += track2.innerHTML; // Clon para loop
+    };
+
+    fillTrack(ropa, r1, r2);
+    fillTrack(perfumes, p1, p2);
+
+    if (ropa.length === 0) {
+        document.querySelector('#ropa .product-marquee-container').innerHTML = '<p style="text-align:center; padding: 40px; color: #888; width: 100%;">Estamos preparando las mejores prendas para ti. ¡Vuelve pronto!</p>';
+    }
+    if (perfumes.length === 0) {
+        document.querySelector('#perfumes .product-marquee-container').innerHTML = '<p style="text-align:center; padding: 40px; color: #888; width: 100%;">Nuestras fragancias árabes exclusivas están en camino.</p>';
+    }
 
     if (window.ui && window.ui.initAnimations) window.ui.initAnimations();
 }

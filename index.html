@@ -15,7 +15,12 @@
     <script src="ui.js"></script>
 </head>
 
-<body>
+<body class="loading">
+    <div class="page-loader" id="page-loader">
+        <img src="img/logobuli.png" alt="Logo" class="loader-logo" id="loader-logo-img">
+        <div class="spinner"></div>
+    </div>
+    <header>
         <div class="top-bar">
             <div class="marquee" id="main-marquee">
                 <!-- Se llena dinámicamente desde db.js -->
@@ -100,22 +105,24 @@
         <!-- Seccion Ropa -->
         <section id="ropa" class="products-section animate-on-scroll">
             <div class="section-heading">
-                <h2>CATÁLOGO ROPA (MORCOTH x ANDREW'S)</h2>
-                <p>Essentials, polos y poleras de altísima calidad a precios mayoristas y minoristas.</p>
+                <h2 id="ropa-title">CATÁLOGO ROPA</h2>
+                <p id="ropa-desc">Cargando descripción...</p>
             </div>
-            <div class="product-grid" id="ropa-container">
-                <!-- Inyectado por JS -->
+            <div class="product-marquee-container">
+                <div class="marquee-track track-left" id="ropa-track-1"></div>
+                <div class="marquee-track track-right" id="ropa-track-2"></div>
             </div>
         </section>
 
         <!-- Seccion Perfumes -->
         <section id="perfumes" class="products-section bg-alt-section animate-on-scroll">
             <div class="section-heading">
-                <h2>CATÁLOGO PERFUMERÍA (BULIS IMPORT)</h2>
-                <p>Perfumes árabes 100% originales y sellados. Exclusividad garantizada en cada entrega.</p>
+                <h2 id="perfumes-title">CATÁLOGO PERFUMERÍA</h2>
+                <p id="perfumes-desc">Cargando descripción...</p>
             </div>
-            <div class="product-grid" id="perfumes-container">
-                <!-- Inyectado por JS -->
+            <div class="product-marquee-container">
+                <div class="marquee-track track-left" id="perf-track-1"></div>
+                <div class="marquee-track track-right" id="perf-track-2"></div>
             </div>
         </section>
 
@@ -155,10 +162,8 @@
             <div class="location-grid">
                 <div class="location-info">
                     <h3>📍 Nuestra Tienda</h3>
-                    <p>Jr. Agustín Gamarra 1095, La Victoria 15018, Perú</p>
-                    <a href="https://www.google.com/maps/search/Jr%2C+Agust%C3%ADn+Gamarra+1095%2C+La+Victoria+15018%2C+Per%C3%BA/@-12.0668,-77.0136,17z?hl=es"
-                        target="_blank" class="btn-shop" style="display:inline-block; margin-top:15px;">VER EN GOOGLE
-                        MAPS</a>
+                    <p id="main-address">Jr. Agustín Gamarra 1095, La Victoria 15018, Perú</p>
+                    <a href="#" id="main-maps-link" target="_blank" class="btn-shop" style="display:inline-block; margin-top:15px;">VER EN GOOGLE MAPS</a>
                     <div class="contact-info">
                         <h3>📞 Contáctanos</h3>
                         <a href="#" target="_blank" class="wa-dynamic">+51 000 000 000</a>
@@ -166,6 +171,7 @@
                 </div>
                 <div class="location-map">
                     <iframe
+                        id="main-maps-iframe"
                         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.8!2d-77.0136!3d-12.0668!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTLCsDA0JzAwLjUiUyA3N8KwMDAnNDkuMCJX!5e0!3m2!1ses!2spe!4v1!5m2!1ses!2spe"
                         width="100%" height="350" style="border:0;" allowfullscreen="" loading="lazy"
                         referrerpolicy="no-referrer-when-downgrade"></iframe>

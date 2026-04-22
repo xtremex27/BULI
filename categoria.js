@@ -76,6 +76,9 @@ async function renderCategoryContent(catId, attempts) {
     } else {
         cont.innerHTML = `<p style="grid-column: 1/-1; text-align:center; padding: 60px 20px; color: #888; font-size: 1.1rem;">Estamos preparando las mejores novedades en ${category ? category.name : 'esta sección'}. ¡Muy pronto disponible!</p>`;
     }
+
+    // Ocultar loader al terminar
+    if (window.ui && window.ui.hideLoader) window.ui.hideLoader();
 }
 
 function renderSubFilters(subs, container, catId) {
